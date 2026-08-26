@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDS Link Hub Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); color: #1e293b; border-radius: 1rem; }
+        .sys-hidden { display: none !important; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <!-- Status Bar -->
+    <div class="max-w-6xl mx-auto mb-4 flex justify-between items-center text-sm">
+        <div id="db-status" class="flex items-center gap-2 text-yellow-400">
+            <i class="fa-solid fa-circle text-xs"></i> <span>กำลังเชื่อมต่อฐานข้อมูล...</span>
+        </div>
+        <div id="sync-time" class="text-slate-400">รออัปเดต...</div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-panel" class="max-w-6xl mx-auto mb-6 bg-amber-500 text-amber-950 p-4 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4 sys-hidden">
+        <div class="flex items-center gap-3 font-semibold">
+            <i class="fa-solid fa-user-shield text-xl"></i> โหมดผู้ดูแลระบบ (Firebase Connected)
+        </div>
+        <button onclick="logoutAdmin()" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg text-sm transition shadow-lg">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="max-w-6xl mx-auto glass-panel p-6 md:p-8 shadow-2xl mb-8">
+        <!-- Header -->
+        <div class="text-center mb-8 relative">
+            <button id="btn-login" onclick="promptLogin()" class="absolute right-0 top-0 text-amber-600 bg-amber-100 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-amber-200 transition">
+                <i class="fa-solid fa-lock"></i> Admin Mode
+            </button>
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-800 mb-2 tracking-tight">EDS EDSPORTAL</h1>
+            <span class="bg-slate-800 text-white px-4 py-1 rounded-full text-sm font-semibold tracking-widest uppercase">Beyond Service Generation</span>
+            <h2 class="text-xl font-medium text-slate-600 mt-6">ศูนย์รวมลิงก์ระบบงาน (Link of Work)</h2>
+            <p class="text-slate-500 text-sm mt-1">รวบรวมลิงก์ระบบปฏิบัติงาน แผนงาน วิศวกรรม และงานบริการไว้ในที่เดียว</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex flex-col md:flex-row gap-4 mb-6">
+            <div class="relative flex-grow">
+                <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="searchInput" onkeyup="renderLinks()" placeholder="ค้นหาชื่อระบบ, คำอธิบาย หรือกลุ่มงาน..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50 text-slate-800">
+            </div>
+            <button onclick="openModal()" class="admin-only sys-hidden bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-xl font-medium transition shadow-md whitespace-nowrap">
+                <i class="fa-solid fa-plus mr-2"></i> เพิ่มลิงก์ใหม่
+            </button>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div id="category-tabs" class="flex flex-wrap justify-center gap-2 mb-8"></div>
+    </div>
+
+    <!-- Stats -->
+    <div id="stats-container" class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"></div>
+
+    <!-- Links Grid -->
+    <div id="links-grid" class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <!-- Modal Form -->
+    <div id="linkModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center sys-hidden">
+        <div class="bg-white rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-6 overflow-y-auto">
+                <h3 id="modalTitle" class="text-2xl font-bold text-slate-800 mb-6 text-center">เพิ่มลิงก์ใหม่</h3>
+                <input type="hidden" id="linkId">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อระบบ (Title)</label>
+                        <input type="text" id="linkTitle" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">URL ลิงก์</label>
+                        <input type="url" id="linkUrl" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-800">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">หมวดหมู่</label>
+                            <select id="linkCategory" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-800"></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">กลุ่มงาน</label>
+                            <input type="text" id="linkGroup" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-800">
+                        </div>
+                    </div>
+                    
+                    <!-- Color Picker -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">สีการ์ด</label>
+                        <div class="flex gap-2" id="colorPicker">
+                            <button onclick="selectColor('blue')" class="w-8 h-8 rounded-full bg-blue-600 focus:ring-4 ring-offset-2 ring-blue-300"></button>
+                            <button onclick="selectColor('amber')" class="w-8 h-8 rounded-full bg-amber-500 focus:ring-4 ring-offset-2 ring-amber-300"></button>
+                            <button onclick="selectColor('emerald')" class="w-8 h-8 rounded-full bg-emerald-500 focus:ring-4 ring-offset-2 ring-emerald-300"></button>
+                            <button onclick="selectColor('rose')" class="w-8 h-8 rounded-full bg-rose-500 focus:ring-4 ring-offset-2 ring-rose-300"></button>
+                            <button onclick="selectColor('purple')" class="w-8 h-8 rounded-full bg-purple-500 focus:ring-4 ring-offset-2 ring-purple-300"></button>
+                        </div>
+                        <input type="hidden" id="linkColor" value="blue">
+                    </div>
+
+                    <!-- Icon Picker -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">ไอคอน</label>
+                        <div class="grid grid-cols-5 gap-2 text-center" id="iconPicker">
+                            <button onclick="selectIcon('fa-link')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-link"></i></button>
+                            <button onclick="selectIcon('fa-warehouse')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-warehouse"></i></button>
+                            <button onclick="selectIcon('fa-boxes-stacked')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-boxes-stacked"></i></button>
+                            <button onclick="selectIcon('fa-calendar-check')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-calendar-check"></i></button>
+                            <button onclick="selectIcon('fa-file-excel')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-file-excel"></i></button>
+                        </div>
+                        <input type="hidden" id="linkIcon" value="fa-link">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">คำอธิบาย</label>
+                        <textarea id="linkDesc" rows="2" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-800"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t bg-slate-50 flex justify-end gap-3">
+                <button onclick="closeModal()" class="px-5 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition">ยกเลิก</button>
+                <button onclick="saveLink()" class="px-5 py-2.5 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition shadow-md">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK & App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // --- รหัสประจำเว็บคุณ (ไม่ต้องแก้แล้ว ฝังถาวร) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrc4Gt8Ua7KJZIc_2pR2UTr-76rvKLADc",
+            projectId: "eds-portal-21960",
+            databaseURL: "https://eds-portal-21960-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // --- ข้อมูลพื้นฐาน ---
+        window.categories = [
+            { id: "cct", name: "CCT", badge: "bg-blue-100 text-blue-800" },
+            { id: "she", name: "SHE", badge: "bg-indigo-100 text-indigo-800" },
+            { id: "inventory", name: "Inventory", badge: "bg-cyan-100 text-cyan-800" },
+            { id: "general", name: "ทั่วไป", badge: "bg-slate-100 text-slate-800" }
+        ];
+
+        let linksData = [];
+        let currentFilter = 'all';
+        let isAdmin = false;
+
+        // --- เริ่มการทำงาน ---
+        const init = () => {
+            const dbRef = ref(db, 'links');
+            
+            // รอรับข้อมูลจาก Firebase (Realtime)
+            onValue(dbRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    linksData = data;
+                } else {
+                    // ถ้า Firebase ว่างเปล่า ให้ใช้ข้อมูลเริ่มต้นนี้
+                    linksData = [
+                        { id: 1, title: "Review Stock MX", category: "inventory", group: "Review Stock MX", color: "amber", icon: "fa-warehouse", desc: "Review Stock MX", url: "https://docs.google.com/spreadsheets/d/1vRjmxwzQtAF9Wc3oRE3legd__nUeM1AsteWppVfRTqo" },
+                        { id: 2, title: "Stock Match DO", category: "inventory", group: "Stock Match DO", color: "blue", icon: "fa-boxes-stacked", desc: "Samsung", url: "#" },
+                        { id: 3, title: "Working Plan Branch", category: "general", group: "Working Plan", color: "blue", icon: "fa-calendar-check", desc: "รวมลิงก์ตารางปฏิบัติงานสาขา", url: "#" }
+                    ];
+                    set(dbRef, linksData); // โยนข้อมูลตั้งต้นกลับไปที่ Firebase
+                }
+
+                // เปลี่ยนสถานะเป็นสีเขียว
+                document.getElementById('db-status').innerHTML = '<i class="fa-solid fa-circle text-emerald-500"></i> <span class="text-emerald-400">เชื่อมต่อ Firebase เรียบร้อย</span>';
+                const now = new Date();
+                document.getElementById('sync-time').innerText = 'อัปเดตล่าสุด: ' + now.toLocaleTimeString();
+
+                checkAdmin();
+                renderTabs();
+                renderLinks();
+            }, (error) => {
+                document.getElementById('db-status').innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500"></i> <span class="text-red-400">ไม่สามารถเชื่อมต่อฐานข้อมูลได้</span>';
+                console.error(error);
+            });
+        };
+
+        // --- ระบบ Render หน้าเว็บ ---
+        window.renderTabs = () => {
+            const tabsDiv = document.getElementById('category-tabs');
+            let html = `<button onclick="setFilter('all')" class="px-5 py-2 rounded-full font-medium transition ${currentFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100'}">ทั้งหมด (${linksData.length})</button>`;
+            
+            window.categories.forEach(c => {
+                const count = linksData.filter(l => l.category === c.id).length;
+                const activeClasses = 'bg-blue-600 text-white shadow-md';
+                const inactiveClasses = 'bg-white text-slate-600 hover:bg-slate-100';
+                html += `<button onclick="setFilter('${c.id}')" class="px-5 py-2 rounded-full font-medium transition ${currentFilter === c.id ? activeClasses : inactiveClasses}">${c.name} (${count})</button>`;
+            });
+            tabsDiv.innerHTML = html;
+        };
+
+        window.setFilter = (cat) => {
+            currentFilter = cat;
+            renderTabs();
+            renderLinks();
+        };
+
+        window.renderLinks = () => {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const grid = document.getElementById('links-grid');
+            const stats = document.getElementById('stats-container');
+            
+            // Filter Data
+            let filtered = linksData.filter(l => {
+                const matchCat = currentFilter === 'all' || l.category === currentFilter;
+                const matchSearch = l.title.toLowerCase().includes(search) || (l.desc && l.desc.toLowerCase().includes(search)) || (l.group && l.group.toLowerCase().includes(search));
+                return matchCat && matchSearch;
+            });
+
+            // Render Stats
+            let statsHtml = `<div class="bg-white rounded-xl p-4 text-center shadow-sm"><div class="text-slate-500 text-sm font-medium mb-1">ลิงก์ทั้งหมด</div><div class="text-3xl font-bold text-slate-800">${linksData.length}</div></div>`;
+            window.categories.forEach(c => {
+                const count = linksData.filter(l => l.category === c.id).length;
+                statsHtml += `<div class="bg-white rounded-xl p-4 text-center shadow-sm"><div class="text-slate-500 text-sm font-medium mb-1">${c.name}</div><div class="text-3xl font-bold text-slate-800">${count}</div></div>`;
+            });
+            stats.innerHTML = statsHtml;
+
+            // Render Cards
+            grid.innerHTML = filtered.map(link => {
+                const catInfo = window.categories.find(c => c.id === link.category) || window.categories[3];
+                const colorMap = {
+                    blue: { bg: 'bg-blue-600', text: 'text-blue-800', light: 'bg-blue-50', border: 'border-blue-200' },
+                    amber: { bg: 'bg-amber-500', text: 'text-amber-800', light: 'bg-amber-50', border: 'border-amber-200' },
+                    emerald: { bg: 'bg-emerald-600', text: 'text-emerald-800', light: 'bg-emerald-50', border: 'border-emerald-200' },
+                    rose: { bg: 'bg-rose-600', text: 'text-rose-800', light: 'bg-rose-50', border: 'border-rose-200' },
+                    purple: { bg: 'bg-purple-600', text: 'text-purple-800', light: 'bg-purple-50', border: 'border-purple-200' }
+                };
+                const theme = colorMap[link.color] || colorMap.blue;
+
+                return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col h-full card-hover relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-2 ${theme.bg}"></div>
+                    <div class="flex justify-between items-start mb-4 mt-2">
+                        <div class="w-12 h-12 rounded-xl ${theme.light} text-2xl flex items-center justify-center ${theme.text} shadow-sm border ${theme.border}">
+                            <i class="fa-solid ${link.icon}"></i>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${catInfo.badge}">${catInfo.name}</span>
+                            ${link.group ? `<div class="text-[10px] text-slate-400 mt-1 uppercase tracking-wider">${link.group}</div>` : ''}
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 leading-tight mb-2">${link.title}</h3>
+                    <p class="text-sm text-slate-500 mb-6 flex-grow line-clamp-2">${link.desc || ''}</p>
+                    <div class="mt-auto">
+                        <a href="${link.url}" target="_blank" class="block w-full text-center py-3 rounded-xl font-semibold text-white ${theme.bg} hover:opacity-90 transition shadow-md">
+                            เปิดลิงก์ <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-sm"></i>
+                        </a>
+                        <div class="admin-only sys-hidden flex justify-end gap-2 mt-3 pt-3 border-t border-slate-100">
+                            <button onclick="editLink(${link.id})" class="text-slate-400 hover:text-amber-500 bg-slate-50 hover:bg-amber-50 w-8 h-8 rounded-lg transition"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteLink(${link.id})" class="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 w-8 h-8 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        };
+
+        // --- ระบบบันทึก / ลบ ข้อมูลไปยัง Firebase ---
+        window.saveToFirebase = async () => {
+            try {
+                await set(ref(db, 'links'), linksData);
+                closeModal();
+            } catch (error) {
+                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + error.message);
+            }
+        };
+
+        window.saveLink = () => {
+            const id = document.getElementById('linkId').value;
+            const link = {
+                id: id ? parseInt(id) : Date.now(),
+                title: document.getElementById('linkTitle').value,
+                url: document.getElementById('linkUrl').value,
+                category: document.getElementById('linkCategory').value,
+                group: document.getElementById('linkGroup').value,
+                color: document.getElementById('linkColor').value,
+                icon: document.getElementById('linkIcon').value,
+                desc: document.getElementById('linkDesc').value
+            };
+
+            if (!link.title || !link.url) return alert('กรุณากรอกชื่อและ URL');
+
+            if (id) {
+                const index = linksData.findIndex(l => l.id === parseInt(id));
+                if (index !== -1) linksData[index] = link;
+            } else {
+                linksData.push(link);
+            }
+
+            saveToFirebase();
+        };
+
+        window.deleteLink = (id) => {
+            if (confirm('ยืนยันการลบลิงก์นี้?')) {
+                linksData = linksData.filter(l => l.id !== id);
+                saveToFirebase();
+            }
+        };
+
+        window.editLink = (id) => {
+            const link = linksData.find(l => l.id === id);
+            if (link) {
+                document.getElementById('modalTitle').innerText = 'แก้ไขลิงก์';
+                document.getElementById('linkId').value = link.id;
+                document.getElementById('linkTitle').value = link.title;
+                document.getElementById('linkUrl').value = link.url;
+                document.getElementById('linkCategory').value = link.category;
+                document.getElementById('linkGroup').value = link.group || '';
+                document.getElementById('linkDesc').value = link.desc || '';
+                selectColor(link.color || 'blue');
+                selectIcon(link.icon || 'fa-link');
+                document.getElementById('linkModal').classList.remove('sys-hidden');
+            }
+        };
+
+        // --- UI Modal ---
+        window.openModal = () => {
+            document.getElementById('modalTitle').innerText = 'เพิ่มลิงก์ใหม่';
+            document.getElementById('linkId').value = '';
+            document.getElementById('linkTitle').value = '';
+            document.getElementById('linkUrl').value = '';
+            document.getElementById('linkGroup').value = '';
+            document.getElementById('linkDesc').value = '';
+            selectColor('blue');
+            selectIcon('fa-link');
+            
+            const catSelect = document.getElementById('linkCategory');
+            catSelect.innerHTML = window.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            
+            document.getElementById('linkModal').classList.remove('sys-hidden');
+        };
+
+        window.closeModal = () => document.getElementById('linkModal').classList.add('sys-hidden');
+
+        window.selectColor = (c) => {
+            document.getElementById('linkColor').value = c;
+            // UI Feedback
+            const btns = document.getElementById('colorPicker').children;
+            for(let b of btns) b.classList.remove('ring-4');
+            event.target.classList.add('ring-4');
+        };
+
+        window.selectIcon = (i) => {
+            document.getElementById('linkIcon').value = i;
+            // UI Feedback
+            const btns = document.getElementById('iconPicker').children;
+            for(let b of btns) { b.classList.remove('bg-blue-100', 'border-blue-500'); b.classList.add('border'); }
+            const btn = event.currentTarget;
+            btn.classList.add('bg-blue-100', 'border-blue-500');
+            btn.classList.remove('border');
+        };
+
+        // --- ระบบ Admin ---
+        window.checkAdmin = () => {
+            isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+            const adminEls = document.querySelectorAll('.admin-only');
+            const adminPanel = document.getElementById('admin-panel');
+            const btnLogin = document.getElementById('btn-login');
+
+            if (isAdmin) {
+                adminEls.forEach(el => el.classList.remove('sys-hidden'));
+                adminPanel.classList.remove('sys-hidden');
+                adminPanel.classList.add('flex');
+                btnLogin.classList.add('sys-hidden');
+            } else {
+                adminEls.forEach(el => el.classList.add('sys-hidden'));
+                adminPanel.classList.add('sys-hidden');
+                adminPanel.classList.remove('flex');
+                btnLogin.classList.remove('sys-hidden');
+            }
+        };
+
+        window.promptLogin = () => {
+            if (prompt("กรุณาใส่รหัสผ่านผู้ดูแลระบบ:") === "1234") {
+                sessionStorage.setItem('isAdmin', 'true');
+                checkAdmin();
+            } else {
+                alert("รหัสผ่านไม่ถูกต้อง");
+            }
+        };
+
+        window.logoutAdmin = () => {
+            sessionStorage.removeItem('isAdmin');
+            checkAdmin();
+        };
+
+        // เริ่มแอป
+        init();
+    </script>
+</body>
+</html>
