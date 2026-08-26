@@ -26,18 +26,35 @@
     </div>
 
     <!-- Admin Panel -->
-    <div id="admin-panel" class="max-w-6xl mx-auto mb-6 bg-amber-500 text-amber-950 p-4 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4 sys-hidden">
+    <div id="admin-panel" class="max-w-6xl mx-auto mb-6 bg-amber-500 text-amber-950 p-4 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4 sys-hidden shadow-lg">
         <div class="flex items-center gap-3 font-semibold">
-            <i class="fa-solid fa-user-shield text-xl"></i> โหมดผู้ดูแลระบบ (Firebase Connected)
+            <i class="fa-solid fa-user-shield text-xl"></i> โหมดผู้ดูแลระบบ (Admin)
         </div>
-        <button onclick="logoutAdmin()" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg text-sm transition shadow-lg">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ
-        </button>
+        
+        <!-- Admin Tools Menu -->
+        <div class="flex flex-wrap gap-2">
+            <button onclick="openCategoryModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition">
+                <i class="fa-solid fa-tags mr-1"></i> จัดการหมวดหมู่
+            </button>
+            <button onclick="backupData()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition">
+                <i class="fa-solid fa-download mr-1"></i> สำรองข้อมูล
+            </button>
+            <button onclick="document.getElementById('fileRestore').click()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition">
+                <i class="fa-solid fa-upload mr-1"></i> กู้คืน
+            </button>
+            <input type="file" id="fileRestore" class="hidden" accept=".json" onchange="restoreData(event)">
+            
+            <button onclick="changePassword()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition">
+                <i class="fa-solid fa-key mr-1"></i> เปลี่ยนรหัส
+            </button>
+            <button onclick="logoutAdmin()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-sm transition ml-2 border border-amber-400">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ
+            </button>
+        </div>
     </div>
 
     <!-- Main Container -->
     <div class="max-w-6xl mx-auto glass-panel p-6 md:p-8 shadow-2xl mb-8">
-        <!-- Header -->
         <div class="text-center mb-8 relative">
             <button id="btn-login" onclick="promptLogin()" class="absolute right-0 top-0 text-amber-600 bg-amber-100 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-amber-200 transition">
                 <i class="fa-solid fa-lock"></i> Admin Mode
@@ -45,10 +62,8 @@
             <h1 class="text-4xl md:text-5xl font-bold text-blue-800 mb-2 tracking-tight">EDS EDSPORTAL</h1>
             <span class="bg-slate-800 text-white px-4 py-1 rounded-full text-sm font-semibold tracking-widest uppercase">Beyond Service Generation</span>
             <h2 class="text-xl font-medium text-slate-600 mt-6">ศูนย์รวมลิงก์ระบบงาน (Link of Work)</h2>
-            <p class="text-slate-500 text-sm mt-1">รวบรวมลิงก์ระบบปฏิบัติงาน แผนงาน วิศวกรรม และงานบริการไว้ในที่เดียว</p>
         </div>
 
-        <!-- Controls -->
         <div class="flex flex-col md:flex-row gap-4 mb-6">
             <div class="relative flex-grow">
                 <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
@@ -59,17 +74,16 @@
             </button>
         </div>
 
-        <!-- Filter Tabs -->
         <div id="category-tabs" class="flex flex-wrap justify-center gap-2 mb-8"></div>
     </div>
 
-    <!-- Stats -->
+    <!-- Stats & Grid -->
     <div id="stats-container" class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"></div>
-
-    <!-- Links Grid -->
     <div id="links-grid" class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
-    <!-- Modal Form -->
+    <!-- ----------------- MODALS ----------------- -->
+    
+    <!-- Link Modal -->
     <div id="linkModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center sys-hidden">
         <div class="bg-white rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div class="p-6 overflow-y-auto">
@@ -78,24 +92,22 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อระบบ (Title)</label>
-                        <input type="text" id="linkTitle" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-800">
+                        <input type="text" id="linkTitle" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">URL ลิงก์</label>
-                        <input type="url" id="linkUrl" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-800">
+                        <input type="url" id="linkUrl" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">หมวดหมู่</label>
-                            <select id="linkCategory" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-800"></select>
+                            <select id="linkCategory" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"></select>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">กลุ่มงาน</label>
-                            <input type="text" id="linkGroup" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-800">
+                            <input type="text" id="linkGroup" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
-                    
-                    <!-- Color Picker -->
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">สีการ์ด</label>
                         <div class="flex gap-2" id="colorPicker">
@@ -107,29 +119,43 @@
                         </div>
                         <input type="hidden" id="linkColor" value="blue">
                     </div>
-
-                    <!-- Icon Picker -->
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">ไอคอน</label>
                         <div class="grid grid-cols-5 gap-2 text-center" id="iconPicker">
-                            <button onclick="selectIcon('fa-link')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-link"></i></button>
-                            <button onclick="selectIcon('fa-warehouse')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-warehouse"></i></button>
-                            <button onclick="selectIcon('fa-boxes-stacked')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-boxes-stacked"></i></button>
-                            <button onclick="selectIcon('fa-calendar-check')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-calendar-check"></i></button>
-                            <button onclick="selectIcon('fa-file-excel')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-file-excel"></i></button>
+                            <button onclick="selectIcon('fa-link')" class="p-2 border rounded hover:bg-slate-100"><i class="fa-solid fa-link"></i></button>
+                            <button onclick="selectIcon('fa-warehouse')" class="p-2 border rounded hover:bg-slate-100"><i class="fa-solid fa-warehouse"></i></button>
+                            <button onclick="selectIcon('fa-boxes-stacked')" class="p-2 border rounded hover:bg-slate-100"><i class="fa-solid fa-boxes-stacked"></i></button>
+                            <button onclick="selectIcon('fa-calendar-check')" class="p-2 border rounded hover:bg-slate-100"><i class="fa-solid fa-calendar-check"></i></button>
+                            <button onclick="selectIcon('fa-file-excel')" class="p-2 border rounded hover:bg-slate-100"><i class="fa-solid fa-file-excel"></i></button>
                         </div>
                         <input type="hidden" id="linkIcon" value="fa-link">
                     </div>
-
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">คำอธิบาย</label>
-                        <textarea id="linkDesc" rows="2" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-800"></textarea>
+                        <textarea id="linkDesc" rows="2" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
                     </div>
                 </div>
             </div>
             <div class="p-4 border-t bg-slate-50 flex justify-end gap-3">
-                <button onclick="closeModal()" class="px-5 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition">ยกเลิก</button>
-                <button onclick="saveLink()" class="px-5 py-2.5 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition shadow-md">บันทึกข้อมูล</button>
+                <button onclick="closeModal()" class="px-5 py-2.5 rounded-lg text-slate-600 hover:bg-slate-200">ยกเลิก</button>
+                <button onclick="saveLink()" class="px-5 py-2.5 rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-md">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div id="categoryModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center sys-hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden shadow-2xl flex flex-col">
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">จัดการหมวดหมู่</h3>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="newCatName" placeholder="ชื่อหมวดหมู่ใหม่..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-amber-500">
+                    <button onclick="addCategory()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium shadow"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div id="categoryList" class="space-y-2 max-h-64 overflow-y-auto pr-2"></div>
+            </div>
+            <div class="p-4 border-t bg-slate-50 flex justify-end">
+                <button onclick="closeCategoryModal()" class="px-5 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-200">ปิด</button>
             </div>
         </div>
     </div>
@@ -139,7 +165,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // --- รหัสประจำเว็บคุณ (ไม่ต้องแก้แล้ว ฝังถาวร) ---
+        // --- รหัสประจำเว็บ (ฝังถาวร) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCrc4Gt8Ua7KJZIc_2pR2UTr-76rvKLADc",
             projectId: "eds-portal-21960",
@@ -149,94 +175,89 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- ข้อมูลพื้นฐาน ---
-        window.categories = [
-            { id: "cct", name: "CCT", badge: "bg-blue-100 text-blue-800" },
-            { id: "she", name: "SHE", badge: "bg-indigo-100 text-indigo-800" },
-            { id: "inventory", name: "Inventory", badge: "bg-cyan-100 text-cyan-800" },
-            { id: "general", name: "ทั่วไป", badge: "bg-slate-100 text-slate-800" }
-        ];
-
-        let linksData = [];
+        // --- ตัวแปรหลัก ---
+        let dbData = {
+            links: [],
+            categories: [
+                { id: "cct", name: "CCT", badge: "bg-blue-100 text-blue-800" },
+                { id: "she", name: "SHE", badge: "bg-indigo-100 text-indigo-800" },
+                { id: "inventory", name: "Inventory", badge: "bg-cyan-100 text-cyan-800" },
+                { id: "general", name: "ทั่วไป", badge: "bg-slate-100 text-slate-800" }
+            ],
+            settings: { adminPin: "1234" }
+        };
         let currentFilter = 'all';
         let isAdmin = false;
 
-        // --- เริ่มการทำงาน ---
-        const init = () => {
-            const dbRef = ref(db, 'links');
-            
-            // รอรับข้อมูลจาก Firebase (Realtime)
-            onValue(dbRef, (snapshot) => {
+        // --- โหลดข้อมูลจาก Firebase ---
+        onValue(ref(db, '/'), (snapshot) => {
+            if (snapshot.exists()) {
                 const data = snapshot.val();
-                if (data) {
-                    linksData = data;
-                } else {
-                    // ถ้า Firebase ว่างเปล่า ให้ใช้ข้อมูลเริ่มต้นนี้
-                    linksData = [
-                        { id: 1, title: "Review Stock MX", category: "inventory", group: "Review Stock MX", color: "amber", icon: "fa-warehouse", desc: "Review Stock MX", url: "https://docs.google.com/spreadsheets/d/1vRjmxwzQtAF9Wc3oRE3legd__nUeM1AsteWppVfRTqo" },
-                        { id: 2, title: "Stock Match DO", category: "inventory", group: "Stock Match DO", color: "blue", icon: "fa-boxes-stacked", desc: "Samsung", url: "#" },
-                        { id: 3, title: "Working Plan Branch", category: "general", group: "Working Plan", color: "blue", icon: "fa-calendar-check", desc: "รวมลิงก์ตารางปฏิบัติงานสาขา", url: "#" }
-                    ];
-                    set(dbRef, linksData); // โยนข้อมูลตั้งต้นกลับไปที่ Firebase
-                }
+                dbData.links = data.links || [];
+                dbData.categories = data.categories || dbData.categories;
+                dbData.settings = data.settings || dbData.settings;
+            } else {
+                // ถ้าเป็นฐานข้อมูลเปล่า ให้สร้างโครงสร้างเริ่มต้น
+                set(ref(db, '/'), dbData);
+            }
+            
+            document.getElementById('db-status').innerHTML = '<i class="fa-solid fa-circle text-emerald-500"></i> <span class="text-emerald-400">ออนไลน์ (Firebase)</span>';
+            document.getElementById('sync-time').innerText = 'อัปเดต: ' + new Date().toLocaleTimeString();
 
-                // เปลี่ยนสถานะเป็นสีเขียว
-                document.getElementById('db-status').innerHTML = '<i class="fa-solid fa-circle text-emerald-500"></i> <span class="text-emerald-400">เชื่อมต่อ Firebase เรียบร้อย</span>';
-                const now = new Date();
-                document.getElementById('sync-time').innerText = 'อัปเดตล่าสุด: ' + now.toLocaleTimeString();
+            checkAdmin();
+            renderTabs();
+            renderLinks();
+            renderCategoryList();
+        }, (error) => {
+            document.getElementById('db-status').innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500"></i> <span class="text-red-400">ออฟไลน์</span>';
+        });
 
-                checkAdmin();
-                renderTabs();
-                renderLinks();
-            }, (error) => {
-                document.getElementById('db-status').innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500"></i> <span class="text-red-400">ไม่สามารถเชื่อมต่อฐานข้อมูลได้</span>';
-                console.error(error);
-            });
+        // --- ฟังก์ชันบันทึกลงฐานข้อมูลหลัก ---
+        window.saveToFirebase = async () => {
+            try {
+                await set(ref(db, '/'), dbData);
+            } catch (error) {
+                alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+            }
         };
 
-        // --- ระบบ Render หน้าเว็บ ---
+        // --- Render UI ---
         window.renderTabs = () => {
             const tabsDiv = document.getElementById('category-tabs');
-            let html = `<button onclick="setFilter('all')" class="px-5 py-2 rounded-full font-medium transition ${currentFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100'}">ทั้งหมด (${linksData.length})</button>`;
+            let html = `<button onclick="setFilter('all')" class="px-5 py-2 rounded-full font-medium transition ${currentFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100'}">ทั้งหมด (${dbData.links.length})</button>`;
             
-            window.categories.forEach(c => {
-                const count = linksData.filter(l => l.category === c.id).length;
-                const activeClasses = 'bg-blue-600 text-white shadow-md';
-                const inactiveClasses = 'bg-white text-slate-600 hover:bg-slate-100';
-                html += `<button onclick="setFilter('${c.id}')" class="px-5 py-2 rounded-full font-medium transition ${currentFilter === c.id ? activeClasses : inactiveClasses}">${c.name} (${count})</button>`;
+            dbData.categories.forEach(c => {
+                const count = dbData.links.filter(l => l.category === c.id).length;
+                const active = currentFilter === c.id ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100';
+                html += `<button onclick="setFilter('${c.id}')" class="px-5 py-2 rounded-full font-medium transition ${active}">${c.name} (${count})</button>`;
             });
             tabsDiv.innerHTML = html;
         };
 
-        window.setFilter = (cat) => {
-            currentFilter = cat;
-            renderTabs();
-            renderLinks();
-        };
+        window.setFilter = (cat) => { currentFilter = cat; renderTabs(); renderLinks(); };
 
         window.renderLinks = () => {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const grid = document.getElementById('links-grid');
             const stats = document.getElementById('stats-container');
             
-            // Filter Data
-            let filtered = linksData.filter(l => {
+            let filtered = dbData.links.filter(l => {
                 const matchCat = currentFilter === 'all' || l.category === currentFilter;
                 const matchSearch = l.title.toLowerCase().includes(search) || (l.desc && l.desc.toLowerCase().includes(search)) || (l.group && l.group.toLowerCase().includes(search));
                 return matchCat && matchSearch;
             });
 
-            // Render Stats
-            let statsHtml = `<div class="bg-white rounded-xl p-4 text-center shadow-sm"><div class="text-slate-500 text-sm font-medium mb-1">ลิงก์ทั้งหมด</div><div class="text-3xl font-bold text-slate-800">${linksData.length}</div></div>`;
-            window.categories.forEach(c => {
-                const count = linksData.filter(l => l.category === c.id).length;
+            // Stats
+            let statsHtml = `<div class="bg-white rounded-xl p-4 text-center shadow-sm"><div class="text-slate-500 text-sm font-medium mb-1">ลิงก์รวม</div><div class="text-3xl font-bold text-slate-800">${dbData.links.length}</div></div>`;
+            dbData.categories.forEach(c => {
+                const count = dbData.links.filter(l => l.category === c.id).length;
                 statsHtml += `<div class="bg-white rounded-xl p-4 text-center shadow-sm"><div class="text-slate-500 text-sm font-medium mb-1">${c.name}</div><div class="text-3xl font-bold text-slate-800">${count}</div></div>`;
             });
             stats.innerHTML = statsHtml;
 
-            // Render Cards
+            // Cards
             grid.innerHTML = filtered.map(link => {
-                const catInfo = window.categories.find(c => c.id === link.category) || window.categories[3];
+                const catInfo = dbData.categories.find(c => c.id === link.category) || dbData.categories[0];
                 const colorMap = {
                     blue: { bg: 'bg-blue-600', text: 'text-blue-800', light: 'bg-blue-50', border: 'border-blue-200' },
                     amber: { bg: 'bg-amber-500', text: 'text-amber-800', light: 'bg-amber-50', border: 'border-amber-200' },
@@ -273,16 +294,7 @@
             }).join('');
         };
 
-        // --- ระบบบันทึก / ลบ ข้อมูลไปยัง Firebase ---
-        window.saveToFirebase = async () => {
-            try {
-                await set(ref(db, 'links'), linksData);
-                closeModal();
-            } catch (error) {
-                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + error.message);
-            }
-        };
-
+        // --- จัดการลิงก์ (เพิ่ม/ลบ/แก้ไข) ---
         window.saveLink = () => {
             const id = document.getElementById('linkId').value;
             const link = {
@@ -299,30 +311,35 @@
             if (!link.title || !link.url) return alert('กรุณากรอกชื่อและ URL');
 
             if (id) {
-                const index = linksData.findIndex(l => l.id === parseInt(id));
-                if (index !== -1) linksData[index] = link;
+                const index = dbData.links.findIndex(l => l.id === parseInt(id));
+                if (index !== -1) dbData.links[index] = link;
             } else {
-                linksData.push(link);
+                dbData.links.push(link);
             }
-
             saveToFirebase();
+            closeModal();
         };
 
         window.deleteLink = (id) => {
             if (confirm('ยืนยันการลบลิงก์นี้?')) {
-                linksData = linksData.filter(l => l.id !== id);
+                dbData.links = dbData.links.filter(l => l.id !== id);
                 saveToFirebase();
             }
         };
 
         window.editLink = (id) => {
-            const link = linksData.find(l => l.id === id);
+            const link = dbData.links.find(l => l.id === id);
             if (link) {
                 document.getElementById('modalTitle').innerText = 'แก้ไขลิงก์';
                 document.getElementById('linkId').value = link.id;
                 document.getElementById('linkTitle').value = link.title;
                 document.getElementById('linkUrl').value = link.url;
+                
+                // อัปเดต Dropdown หมวดหมู่ก่อนเลือก
+                const catSelect = document.getElementById('linkCategory');
+                catSelect.innerHTML = dbData.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
                 document.getElementById('linkCategory').value = link.category;
+                
                 document.getElementById('linkGroup').value = link.group || '';
                 document.getElementById('linkDesc').value = link.desc || '';
                 selectColor(link.color || 'blue');
@@ -331,44 +348,85 @@
             }
         };
 
-        // --- UI Modal ---
-        window.openModal = () => {
-            document.getElementById('modalTitle').innerText = 'เพิ่มลิงก์ใหม่';
-            document.getElementById('linkId').value = '';
-            document.getElementById('linkTitle').value = '';
-            document.getElementById('linkUrl').value = '';
-            document.getElementById('linkGroup').value = '';
-            document.getElementById('linkDesc').value = '';
-            selectColor('blue');
-            selectIcon('fa-link');
+        // --- จัดการหมวดหมู่ (Categories) ---
+        window.renderCategoryList = () => {
+            const list = document.getElementById('categoryList');
+            list.innerHTML = dbData.categories.map(c => `
+                <div class="flex justify-between items-center p-3 bg-slate-50 border rounded-lg">
+                    <span class="font-medium text-slate-700">${c.name} (รหัส: ${c.id})</span>
+                    <button onclick="deleteCategory('${c.id}')" class="text-red-500 hover:bg-red-100 p-2 rounded transition"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        };
+
+        window.addCategory = () => {
+            const name = document.getElementById('newCatName').value.trim();
+            if (!name) return;
+            const id = name.toLowerCase().replace(/[^a-z0-9]/g, ''); // สร้าง id อัตโนมัติจากชื่อ
+            if (dbData.categories.find(c => c.id === id)) return alert('หมวดหมู่นี้มีอยู่แล้ว');
             
-            const catSelect = document.getElementById('linkCategory');
-            catSelect.innerHTML = window.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            dbData.categories.push({
+                id: id,
+                name: name,
+                badge: "bg-slate-100 text-slate-800" // สีเริ่มต้น
+            });
+            document.getElementById('newCatName').value = '';
+            saveToFirebase(); // บันทึกลงฐานข้อมูลทันที
+        };
+
+        window.deleteCategory = (id) => {
+            if(dbData.links.find(l => l.category === id)) {
+                return alert('ไม่สามารถลบได้ เนื่องจากมีลิงก์ที่ใช้หมวดหมู่นี้อยู่');
+            }
+            if (confirm('ยืนยันการลบหมวดหมู่นี้?')) {
+                dbData.categories = dbData.categories.filter(c => c.id !== id);
+                saveToFirebase();
+            }
+        };
+
+        // --- Backup & Restore (สำรอง/กู้คืนข้อมูล) ---
+        window.backupData = () => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dbData, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `eds_backup_${new Date().toISOString().slice(0,10)}.json`);
+            dlAnchorElem.click();
+        };
+
+        window.restoreData = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (importedData.links && importedData.categories) {
+                        dbData = importedData;
+                        saveToFirebase();
+                        alert('กู้คืนข้อมูลสำเร็จ!');
+                    } else {
+                        alert('รูปแบบไฟล์ไม่ถูกต้อง');
+                    }
+                } catch (err) {
+                    alert('เกิดข้อผิดพลาดในการอ่านไฟล์');
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        // --- ระบบความปลอดภัย (เปลี่ยนรหัส/ล็อกอิน) ---
+        window.changePassword = () => {
+            const oldPass = prompt("กรุณาใส่รหัสผ่าน 'ปัจจุบัน':");
+            if (oldPass !== dbData.settings.adminPin) return alert("รหัสผ่านเดิมไม่ถูกต้อง!");
             
-            document.getElementById('linkModal').classList.remove('sys-hidden');
+            const newPass = prompt("ตั้งรหัสผ่าน 'ใหม่' (ตัวเลข 4-6 หลัก):");
+            if (newPass && newPass.trim() !== "") {
+                dbData.settings.adminPin = newPass.trim();
+                saveToFirebase();
+                alert("เปลี่ยนรหัสผ่านสำเร็จ! กรุณาจดจำรหัสใหม่ไว้ให้ดี");
+            }
         };
 
-        window.closeModal = () => document.getElementById('linkModal').classList.add('sys-hidden');
-
-        window.selectColor = (c) => {
-            document.getElementById('linkColor').value = c;
-            // UI Feedback
-            const btns = document.getElementById('colorPicker').children;
-            for(let b of btns) b.classList.remove('ring-4');
-            event.target.classList.add('ring-4');
-        };
-
-        window.selectIcon = (i) => {
-            document.getElementById('linkIcon').value = i;
-            // UI Feedback
-            const btns = document.getElementById('iconPicker').children;
-            for(let b of btns) { b.classList.remove('bg-blue-100', 'border-blue-500'); b.classList.add('border'); }
-            const btn = event.currentTarget;
-            btn.classList.add('bg-blue-100', 'border-blue-500');
-            btn.classList.remove('border');
-        };
-
-        // --- ระบบ Admin ---
         window.checkAdmin = () => {
             isAdmin = sessionStorage.getItem('isAdmin') === 'true';
             const adminEls = document.querySelectorAll('.admin-only');
@@ -389,7 +447,7 @@
         };
 
         window.promptLogin = () => {
-            if (prompt("กรุณาใส่รหัสผ่านผู้ดูแลระบบ:") === "1234") {
+            if (prompt("กรุณาใส่รหัสผ่านผู้ดูแลระบบ:") === dbData.settings.adminPin) {
                 sessionStorage.setItem('isAdmin', 'true');
                 checkAdmin();
             } else {
@@ -402,8 +460,40 @@
             checkAdmin();
         };
 
-        // เริ่มแอป
-        init();
+        // --- UI Modal ทั่วไป ---
+        window.openModal = () => {
+            document.getElementById('modalTitle').innerText = 'เพิ่มลิงก์ใหม่';
+            document.getElementById('linkId').value = '';
+            document.getElementById('linkTitle').value = '';
+            document.getElementById('linkUrl').value = '';
+            document.getElementById('linkGroup').value = '';
+            document.getElementById('linkDesc').value = '';
+            selectColor('blue');
+            selectIcon('fa-link');
+            const catSelect = document.getElementById('linkCategory');
+            catSelect.innerHTML = dbData.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            document.getElementById('linkModal').classList.remove('sys-hidden');
+        };
+        window.closeModal = () => document.getElementById('linkModal').classList.add('sys-hidden');
+        
+        window.openCategoryModal = () => document.getElementById('categoryModal').classList.remove('sys-hidden');
+        window.closeCategoryModal = () => document.getElementById('categoryModal').classList.add('sys-hidden');
+
+        window.selectColor = (c) => {
+            document.getElementById('linkColor').value = c;
+            const btns = document.getElementById('colorPicker').children;
+            for(let b of btns) b.classList.remove('ring-4');
+            event.target.classList.add('ring-4');
+        };
+        window.selectIcon = (i) => {
+            document.getElementById('linkIcon').value = i;
+            const btns = document.getElementById('iconPicker').children;
+            for(let b of btns) { b.classList.remove('bg-blue-100', 'border-blue-500'); b.classList.add('border'); }
+            const btn = event.currentTarget;
+            btn.classList.add('bg-blue-100', 'border-blue-500');
+            btn.classList.remove('border');
+        };
+
     </script>
 </body>
 </html>
