@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EDS Link Hub Portal</title>
+    <title>EDS Operations Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -64,7 +64,9 @@
             <button id="btn-login" onclick="promptLogin()" class="absolute right-0 top-0 text-amber-600 bg-amber-100 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-amber-200 transition shadow-sm">
                 <i class="fa-solid fa-lock"></i> Admin Mode
             </button>
-            <h1 class="text-4xl md:text-5xl font-bold text-blue-800 mb-2 tracking-tight">EDS Operations Hub</h1>
+            
+            <!-- เปลี่ยนชื่อแอปให้เป็นมืออาชีพมากขึ้น -->
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-900 mb-2 tracking-tight">EDS <span class="text-blue-600">Operations Hub</span></h1>
             <span class="bg-slate-800 text-white px-4 py-1 rounded-full text-sm font-semibold tracking-widest uppercase shadow-sm">Beyond Service Generation</span>
             <h2 class="text-xl font-medium text-slate-600 mt-6">ศูนย์รวมลิงก์ระบบงาน (Link of Work)</h2>
         </div>
@@ -74,6 +76,12 @@
                 <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                 <input type="text" id="searchInput" onkeyup="renderLinks()" placeholder="ค้นหาชื่อระบบ, คำอธิบาย หรือกลุ่มงาน..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 placeholder-slate-400 shadow-sm">
             </div>
+            
+            <!-- ปุ่มสลับมุมมอง Grid/List (แสดงให้ผู้ใช้ทุกคนเห็น) -->
+            <button id="btn-view-toggle" onclick="toggleView()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-3 rounded-xl font-medium transition shadow-sm whitespace-nowrap border border-slate-200">
+                <i class="fa-solid fa-list mr-2"></i> แบบรายการ
+            </button>
+            
             <button onclick="openModal()" class="admin-only sys-hidden bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-xl font-medium transition shadow-md whitespace-nowrap">
                 <i class="fa-solid fa-plus mr-2"></i> เพิ่มลิงก์ใหม่
             </button>
@@ -82,8 +90,8 @@
         <div id="category-tabs" class="flex flex-wrap justify-center gap-2 mb-8"></div>
     </div>
 
-    <!-- Links Grid (นำ Stats ออกไปแล้ว) -->
-    <div id="links-grid" class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <!-- Links Grid/List Container -->
+    <div id="links-grid" class="max-w-6xl mx-auto"></div>
 
     <!-- ----------------- MODALS ----------------- -->
     
@@ -191,6 +199,7 @@
         let dbData = { links: [], categories: [], settings: { adminPin: "1234" } };
         let currentFilter = 'all';
         let isAdmin = false;
+        let currentView = 'grid'; // ค่าเริ่มต้นคือมุมมองแบบกริด
 
         const Toast = Swal.mixin({
             toast: true,
@@ -259,6 +268,20 @@
             }
         };
 
+        // --- ระบบสลับมุมมอง Grid / List ---
+        window.toggleView = () => {
+            currentView = currentView === 'grid' ? 'list' : 'grid';
+            
+            const btn = document.getElementById('btn-view-toggle');
+            if (currentView === 'grid') {
+                btn.innerHTML = '<i class="fa-solid fa-list mr-2"></i> แบบรายการ';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-border-all mr-2"></i> แบบกริด';
+            }
+            
+            renderLinks();
+        };
+
         window.renderTabs = () => {
             const tabsDiv = document.getElementById('category-tabs');
             let html = `<button onclick="setFilter('all')" class="px-5 py-2 rounded-full font-medium transition ${currentFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100'}">ทั้งหมด (${dbData.links.length})</button>`;
@@ -277,6 +300,13 @@
             const search = document.getElementById('searchInput').value.toLowerCase();
             const grid = document.getElementById('links-grid');
             
+            // ปรับโครงสร้าง Container ตามมุมมองปัจจุบัน
+            if (currentView === 'grid') {
+                grid.className = 'max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+            } else {
+                grid.className = 'max-w-6xl mx-auto grid grid-cols-1 gap-4';
+            }
+            
             let filtered = dbData.links.filter(l => {
                 const matchCat = currentFilter === 'all' || l.category === currentFilter;
                 const matchSearch = l.title.toLowerCase().includes(search) || (l.desc && l.desc.toLowerCase().includes(search)) || (l.group && l.group.toLowerCase().includes(search));
@@ -290,36 +320,67 @@
                 const theme = themeMap[c] ? themeMap[c][s] : themeMap.blue.light;
                 const adminVisibility = isAdmin ? '' : 'sys-hidden';
 
-                return `
-                <div class="rounded-2xl p-6 shadow-sm border flex flex-col h-full card-hover relative overflow-hidden ${theme.card}">
-                    <div class="absolute top-0 left-0 w-full h-2 ${theme.bar}"></div>
-                    <div class="flex justify-between items-start mb-4 mt-2">
-                        <div class="w-12 h-12 rounded-xl text-2xl flex items-center justify-center shadow-sm border ${theme.icon}">
+                if (currentView === 'grid') {
+                    // โค้ดสร้าง UI สำหรับ มุมมองกริด (Grid View)
+                    return `
+                    <div class="rounded-2xl p-6 shadow-sm border flex flex-col h-full card-hover relative overflow-hidden ${theme.card}">
+                        <div class="absolute top-0 left-0 w-full h-2 ${theme.bar}"></div>
+                        <div class="flex justify-between items-start mb-4 mt-2">
+                            <div class="w-12 h-12 rounded-xl text-2xl flex items-center justify-center shadow-sm border ${theme.icon}">
+                                <i class="fa-solid ${link.icon}"></i>
+                            </div>
+                            <div class="text-right">
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/80 text-slate-800 shadow-sm">${catInfo.name}</span>
+                                ${link.group ? `<div class="text-[10px] mt-1 uppercase tracking-wider font-semibold ${theme.text2}">${link.group}</div>` : ''}
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold leading-tight mb-2 ${theme.text1}">${link.title}</h3>
+                        <p class="text-sm mb-6 flex-grow line-clamp-2 ${theme.text2}">${link.desc || ''}</p>
+                        <div class="mt-auto">
+                            <a href="${link.url}" target="_blank" class="block w-full text-center py-3 rounded-xl font-semibold text-white ${theme.bar} hover:opacity-90 transition shadow-md">
+                                เปิดลิงก์ <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-sm"></i>
+                            </a>
+                            <div class="admin-only ${adminVisibility} flex justify-between items-center mt-3 pt-3 border-t border-black/5">
+                                <div class="flex gap-1">
+                                    <button onclick="moveLink(${link.id}, -1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนไปซ้าย"><i class="fa-solid fa-arrow-left"></i></button>
+                                    <button onclick="moveLink(${link.id}, 1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนไปขวา"><i class="fa-solid fa-arrow-right"></i></button>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button onclick="editLink(${link.id})" class="text-slate-500 hover:text-amber-500 bg-black/5 hover:bg-amber-100 w-8 h-8 rounded-lg transition" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="deleteLink(${link.id})" class="text-slate-500 hover:text-red-500 bg-black/5 hover:bg-red-100 w-8 h-8 rounded-lg transition" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                } else {
+                    // โค้ดสร้าง UI สำหรับ มุมมองรายการ (List View) แนวนอน
+                    return `
+                    <div class="rounded-xl p-4 md:p-5 shadow-sm border flex flex-col md:flex-row items-start md:items-center gap-4 card-hover relative overflow-hidden ${theme.card}">
+                        <div class="absolute top-0 left-0 w-full h-2 md:w-2 md:h-full ${theme.bar}"></div>
+                        <div class="w-12 h-12 flex-shrink-0 rounded-xl text-2xl flex items-center justify-center shadow-sm border hidden md:flex ${theme.icon}">
                             <i class="fa-solid ${link.icon}"></i>
                         </div>
-                        <div class="text-right">
-                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/80 text-slate-800 shadow-sm">${catInfo.name}</span>
-                            ${link.group ? `<div class="text-[10px] mt-1 uppercase tracking-wider font-semibold ${theme.text2}">${link.group}</div>` : ''}
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold leading-tight mb-2 ${theme.text1}">${link.title}</h3>
-                    <p class="text-sm mb-6 flex-grow line-clamp-2 ${theme.text2}">${link.desc || ''}</p>
-                    <div class="mt-auto">
-                        <a href="${link.url}" target="_blank" class="block w-full text-center py-3 rounded-xl font-semibold text-white ${theme.bar} hover:opacity-90 transition shadow-md">
-                            เปิดลิงก์ <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-sm"></i>
-                        </a>
-                        <div class="admin-only ${adminVisibility} flex justify-between items-center mt-3 pt-3 border-t border-black/5">
-                            <div class="flex gap-1">
-                                <button onclick="moveLink(${link.id}, -1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนมาด้านหน้า"><i class="fa-solid fa-arrow-left"></i></button>
-                                <button onclick="moveLink(${link.id}, 1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนไปด้านหลัง"><i class="fa-solid fa-arrow-right"></i></button>
+                        <div class="flex-grow min-w-0 w-full md:w-auto">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/80 text-slate-800 shadow-sm">${catInfo.name}</span>
+                                ${link.group ? `<span class="text-[10px] uppercase tracking-wider font-semibold ${theme.text2}">${link.group}</span>` : ''}
                             </div>
-                            <div class="flex gap-1">
-                                <button onclick="editLink(${link.id})" class="text-slate-500 hover:text-amber-500 bg-black/5 hover:bg-amber-100 w-8 h-8 rounded-lg transition" title="แก้ไขการ์ดนี้"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="deleteLink(${link.id})" class="text-slate-500 hover:text-red-500 bg-black/5 hover:bg-red-100 w-8 h-8 rounded-lg transition" title="ลบการ์ดนี้"><i class="fa-solid fa-trash"></i></button>
-                            </div>
+                            <h3 class="text-base md:text-lg font-bold truncate ${theme.text1}">${link.title}</h3>
+                            <p class="text-xs md:text-sm truncate ${theme.text2}">${link.desc || ''}</p>
                         </div>
-                    </div>
-                </div>`;
+                        <div class="w-full md:w-auto flex-shrink-0 flex items-center justify-between md:justify-end gap-2 mt-2 md:mt-0 border-t md:border-t-0 md:border-l border-black/10 pt-3 md:pt-0 md:pl-3">
+                            <div class="admin-only ${adminVisibility} flex gap-1">
+                                <button onclick="moveLink(${link.id}, -1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนขึ้น"><i class="fa-solid fa-arrow-up"></i></button>
+                                <button onclick="moveLink(${link.id}, 1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนลง"><i class="fa-solid fa-arrow-down"></i></button>
+                                <button onclick="editLink(${link.id})" class="text-slate-500 hover:text-amber-500 bg-black/5 hover:bg-amber-100 w-8 h-8 rounded-lg transition" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteLink(${link.id})" class="text-slate-500 hover:text-red-500 bg-black/5 hover:bg-red-100 w-8 h-8 rounded-lg transition" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                            <a href="${link.url}" target="_blank" class="px-5 py-2.5 rounded-xl font-semibold text-white ${theme.bar} hover:opacity-90 transition shadow-md whitespace-nowrap text-sm flex items-center">
+                                เปิดลิงก์ <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-xs"></i>
+                            </a>
+                        </div>
+                    </div>`;
+                }
             }).join('');
         };
 
@@ -429,7 +490,7 @@
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    dbData.links = []; // ล้างแค่ลิงก์ เก็บหมวดหมู่ไว้
+                    dbData.links = [];
                     saveToFirebase().then(() => {
                         Toast.fire({ icon: 'success', title: 'ล้างข้อมูลลิงก์เรียบร้อยแล้ว' });
                     });
