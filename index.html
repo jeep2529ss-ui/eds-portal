@@ -37,18 +37,22 @@
             <button onclick="openCategoryModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
                 <i class="fa-solid fa-tags mr-1"></i> จัดการหมวดหมู่
             </button>
-            <button onclick="backupData()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
+            <button onclick="backupData()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
                 <i class="fa-solid fa-download mr-1"></i> สำรองข้อมูล
             </button>
-            <button onclick="document.getElementById('fileRestore').click()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
+            <button onclick="document.getElementById('fileRestore').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
                 <i class="fa-solid fa-upload mr-1"></i> กู้คืน
             </button>
             <input type="file" id="fileRestore" class="hidden" accept=".json" onchange="restoreData(event)">
             
-            <button onclick="changePassword()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
+            <button onclick="clearAllData()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
+                <i class="fa-solid fa-trash-can mr-1"></i> ล้างข้อมูล
+            </button>
+            
+            <button onclick="changePassword()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm ml-2">
                 <i class="fa-solid fa-key mr-1"></i> เปลี่ยนรหัส
             </button>
-            <button onclick="logoutAdmin()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-sm transition ml-2 border border-amber-400 shadow-sm">
+            <button onclick="logoutAdmin()" class="bg-slate-900 hover:bg-black text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ
             </button>
         </div>
@@ -410,6 +414,27 @@
                 selectIcon(link.icon || 'fa-link');
                 document.getElementById('linkModal').classList.remove('sys-hidden');
             }
+        };
+
+        // --- ฟังก์ชันล้างข้อมูลทั้งหมด ---
+        window.clearAllData = () => {
+            Swal.fire({
+                title: 'ล้างข้อมูลการ์ดทั้งหมด?',
+                text: "การ์ดลิงก์ทั้งหมดในระบบจะถูกลบทิ้งถาวร (หมวดหมู่และรหัสผ่านจะยังอยู่) แน่ใจหรือไม่?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'ใช่, ล้างข้อมูลเลย',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    dbData.links = []; // ล้างแค่ลิงก์ เก็บหมวดหมู่ไว้
+                    saveToFirebase().then(() => {
+                        Toast.fire({ icon: 'success', title: 'ล้างข้อมูลลิงก์เรียบร้อยแล้ว' });
+                    });
+                }
+            });
         };
 
         window.renderCategoryList = () => {
