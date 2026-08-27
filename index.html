@@ -31,21 +31,21 @@
             <i class="fa-solid fa-user-shield text-xl"></i> โหมดผู้ดูแลระบบ (Admin)
         </div>
         <div class="flex flex-wrap gap-2">
-            <button onclick="openCategoryModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition">
+            <button onclick="openCategoryModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
                 <i class="fa-solid fa-tags mr-1"></i> จัดการหมวดหมู่
             </button>
-            <button onclick="backupData()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition">
+            <button onclick="backupData()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
                 <i class="fa-solid fa-download mr-1"></i> สำรองข้อมูล
             </button>
-            <button onclick="document.getElementById('fileRestore').click()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition">
+            <button onclick="document.getElementById('fileRestore').click()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
                 <i class="fa-solid fa-upload mr-1"></i> กู้คืน
             </button>
             <input type="file" id="fileRestore" class="hidden" accept=".json" onchange="restoreData(event)">
             
-            <button onclick="changePassword()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition">
+            <button onclick="changePassword()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition shadow-sm">
                 <i class="fa-solid fa-key mr-1"></i> เปลี่ยนรหัส
             </button>
-            <button onclick="logoutAdmin()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-sm transition ml-2 border border-amber-400">
+            <button onclick="logoutAdmin()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-sm transition ml-2 border border-amber-400 shadow-sm">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ
             </button>
         </div>
@@ -54,18 +54,18 @@
     <!-- Main Container -->
     <div class="max-w-6xl mx-auto glass-panel p-6 md:p-8 shadow-2xl mb-8">
         <div class="text-center mb-8 relative">
-            <button id="btn-login" onclick="promptLogin()" class="absolute right-0 top-0 text-amber-600 bg-amber-100 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-amber-200 transition">
+            <button id="btn-login" onclick="promptLogin()" class="absolute right-0 top-0 text-amber-600 bg-amber-100 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-amber-200 transition shadow-sm">
                 <i class="fa-solid fa-lock"></i> Admin Mode
             </button>
             <h1 class="text-4xl md:text-5xl font-bold text-blue-800 mb-2 tracking-tight">EDS EDSPORTAL</h1>
-            <span class="bg-slate-800 text-white px-4 py-1 rounded-full text-sm font-semibold tracking-widest uppercase">Beyond Service Generation</span>
+            <span class="bg-slate-800 text-white px-4 py-1 rounded-full text-sm font-semibold tracking-widest uppercase shadow-sm">Beyond Service Generation</span>
             <h2 class="text-xl font-medium text-slate-600 mt-6">ศูนย์รวมลิงก์ระบบงาน (Link of Work)</h2>
         </div>
 
         <div class="flex flex-col md:flex-row gap-4 mb-6">
             <div class="relative flex-grow">
                 <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" onkeyup="renderLinks()" placeholder="ค้นหาชื่อระบบ, คำอธิบาย หรือกลุ่มงาน..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 placeholder-slate-400">
+                <input type="text" id="searchInput" onkeyup="renderLinks()" placeholder="ค้นหาชื่อระบบ, คำอธิบาย หรือกลุ่มงาน..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 placeholder-slate-400 shadow-sm">
             </div>
             <button onclick="openModal()" class="admin-only sys-hidden bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-xl font-medium transition shadow-md whitespace-nowrap">
                 <i class="fa-solid fa-plus mr-2"></i> เพิ่มลิงก์ใหม่
@@ -145,8 +145,8 @@
                 </div>
             </div>
             <div class="p-4 border-t bg-slate-50 flex justify-end gap-3">
-                <button onclick="closeModal()" class="px-5 py-2.5 rounded-lg text-slate-600 font-medium hover:bg-slate-200">ยกเลิก</button>
-                <button onclick="saveLink()" class="px-5 py-2.5 rounded-lg text-white font-medium bg-blue-600 hover:bg-blue-700 shadow-md">บันทึกข้อมูล</button>
+                <button onclick="closeModal()" class="px-5 py-2.5 rounded-lg text-slate-600 font-medium hover:bg-slate-200 transition">ยกเลิก</button>
+                <button onclick="saveLink()" class="px-5 py-2.5 rounded-lg text-white font-medium bg-blue-600 hover:bg-blue-700 shadow-md transition">บันทึกข้อมูล</button>
             </div>
         </div>
     </div>
@@ -158,12 +158,12 @@
                 <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">จัดการหมวดหมู่</h3>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="newCatName" placeholder="พิมพ์ชื่อหมวดหมู่ใหม่..." class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 bg-white text-slate-900">
-                    <button onclick="addCategory()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium shadow"><i class="fa-solid fa-plus"></i></button>
+                    <button onclick="addCategory()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium shadow transition"><i class="fa-solid fa-plus"></i></button>
                 </div>
                 <div id="categoryList" class="space-y-2 max-h-[50vh] overflow-y-auto pr-2"></div>
             </div>
             <div class="p-4 border-t bg-slate-50 flex justify-end">
-                <button onclick="closeCategoryModal()" class="px-5 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-200">ปิด</button>
+                <button onclick="closeCategoryModal()" class="px-5 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition">ปิด</button>
             </div>
         </div>
     </div>
@@ -279,6 +279,9 @@
                 const c = link.color || 'blue';
                 const s = link.shade || 'light';
                 const theme = themeMap[c] ? themeMap[c][s] : themeMap.blue.light;
+                
+                // เช็คสถานะแอดมิน เพื่อเปิดปุ่มแก้ไขในการ์ดแต่ละใบแบบ Realtime
+                const adminVisibility = isAdmin ? '' : 'sys-hidden';
 
                 return `
                 <div class="rounded-2xl p-6 shadow-sm border flex flex-col h-full card-hover relative overflow-hidden ${theme.card}">
@@ -289,7 +292,7 @@
                         </div>
                         <div class="text-right">
                             <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/80 text-slate-800 shadow-sm">${catInfo.name}</span>
-                            ${link.group ? `<div class="text-[10px] mt-1 uppercase tracking-wider ${theme.text2}">${link.group}</div>` : ''}
+                            ${link.group ? `<div class="text-[10px] mt-1 uppercase tracking-wider font-semibold ${theme.text2}">${link.group}</div>` : ''}
                         </div>
                     </div>
                     <h3 class="text-lg font-bold leading-tight mb-2 ${theme.text1}">${link.title}</h3>
@@ -298,9 +301,9 @@
                         <a href="${link.url}" target="_blank" class="block w-full text-center py-3 rounded-xl font-semibold text-white ${theme.bar} hover:opacity-90 transition shadow-md">
                             เปิดลิงก์ <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-sm"></i>
                         </a>
-                        <div class="admin-only sys-hidden flex justify-end gap-2 mt-3 pt-3 border-t border-black/5">
-                            <button onclick="editLink(${link.id})" class="text-slate-400 hover:text-amber-500 bg-black/5 hover:bg-black/10 w-8 h-8 rounded-lg transition"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteLink(${link.id})" class="text-slate-400 hover:text-red-500 bg-black/5 hover:bg-black/10 w-8 h-8 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+                        <div class="admin-only ${adminVisibility} flex justify-end gap-2 mt-3 pt-3 border-t border-black/5">
+                            <button onclick="editLink(${link.id})" class="text-slate-500 hover:text-amber-500 bg-black/5 hover:bg-amber-100 w-8 h-8 rounded-lg transition" title="แก้ไขการ์ดนี้"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteLink(${link.id})" class="text-slate-500 hover:text-red-500 bg-black/5 hover:bg-red-100 w-8 h-8 rounded-lg transition" title="ลบการ์ดนี้"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 </div>`;
@@ -359,7 +362,7 @@
             }
         };
 
-        // --- ระบบจัดการหมวดหมู่แบบใหม่ (จัดเรียง / พิมพ์แก้ไขได้) ---
+        // --- ระบบจัดการหมวดหมู่แบบใหม่ ---
         window.renderCategoryList = () => {
             const list = document.getElementById('categoryList');
             list.innerHTML = dbData.categories.map((c, index) => `
@@ -379,14 +382,14 @@
             const temp = dbData.categories[index];
             dbData.categories[index] = dbData.categories[index + dir];
             dbData.categories[index + dir] = temp;
-            saveToFirebase(); // สลับตำแหน่งแล้วเซฟเลย
+            saveToFirebase(); 
         };
 
         window.updateCatName = (id, newName) => {
             const cat = dbData.categories.find(c => c.id === id);
             if (cat && newName.trim() !== '') {
                 cat.name = newName.trim();
-                saveToFirebase(); // พิมพ์แก้ชื่อปุ๊บ เซฟลงฐานข้อมูลปั๊บ
+                saveToFirebase(); 
             }
         };
 
@@ -464,6 +467,9 @@
                 adminPanel.classList.remove('flex');
                 btnLogin.classList.remove('sys-hidden');
             }
+            
+            // รีเฟรชลิงก์เพื่อโชว์/ซ่อน ปุ่มแก้ไขในการ์ด
+            renderLinks();
         };
 
         window.promptLogin = () => {
