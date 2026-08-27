@@ -78,8 +78,7 @@
         <div id="category-tabs" class="flex flex-wrap justify-center gap-2 mb-8"></div>
     </div>
 
-    <!-- Stats & Grid -->
-    <div id="stats-container" class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"></div>
+    <!-- Links Grid (นำ Stats ออกไปแล้ว) -->
     <div id="links-grid" class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
     <!-- ----------------- MODALS ----------------- -->
@@ -273,20 +272,12 @@
         window.renderLinks = () => {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const grid = document.getElementById('links-grid');
-            const stats = document.getElementById('stats-container');
             
             let filtered = dbData.links.filter(l => {
                 const matchCat = currentFilter === 'all' || l.category === currentFilter;
                 const matchSearch = l.title.toLowerCase().includes(search) || (l.desc && l.desc.toLowerCase().includes(search)) || (l.group && l.group.toLowerCase().includes(search));
                 return matchCat && matchSearch;
             });
-
-            let statsHtml = `<div class="bg-white rounded-xl p-4 text-center shadow-sm"><div class="text-slate-500 text-sm font-medium mb-1">ลิงก์รวม</div><div class="text-3xl font-bold text-slate-800">${dbData.links.length}</div></div>`;
-            dbData.categories.forEach(c => {
-                const count = dbData.links.filter(l => l.category === c.id).length;
-                statsHtml += `<div class="bg-white rounded-xl p-4 text-center shadow-sm"><div class="text-slate-500 text-sm font-medium mb-1">${c.name}</div><div class="text-3xl font-bold text-slate-800">${count}</div></div>`;
-            });
-            stats.innerHTML = statsHtml;
 
             grid.innerHTML = filtered.map((link, index) => {
                 const catInfo = dbData.categories.find(c => c.id === link.category) || dbData.categories[0];
@@ -313,7 +304,6 @@
                         <a href="${link.url}" target="_blank" class="block w-full text-center py-3 rounded-xl font-semibold text-white ${theme.bar} hover:opacity-90 transition shadow-md">
                             เปิดลิงก์ <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-sm"></i>
                         </a>
-                        <!-- ปุ่ม Admin ควบคุมการ์ด -->
                         <div class="admin-only ${adminVisibility} flex justify-between items-center mt-3 pt-3 border-t border-black/5">
                             <div class="flex gap-1">
                                 <button onclick="moveLink(${link.id}, -1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนมาด้านหน้า"><i class="fa-solid fa-arrow-left"></i></button>
@@ -422,7 +412,6 @@
             }
         };
 
-        // --- ระบบจัดการหมวดหมู่แบบใหม่ (แก้ไขชื่อด้วย SweetAlert) ---
         window.renderCategoryList = () => {
             const list = document.getElementById('categoryList');
             list.innerHTML = dbData.categories.map((c, index) => `
@@ -508,7 +497,6 @@
             });
         };
 
-        // --- Backup & Restore ---
         window.backupData = () => {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dbData, null, 2));
             const dl = document.createElement('a');
@@ -535,7 +523,6 @@
             reader.readAsText(file);
         };
 
-        // --- Admin & Security ---
         window.changePassword = async () => {
             const { value: oldPass } = await Swal.fire({
                 title: 'รหัสผ่านปัจจุบัน',
@@ -582,6 +569,12 @@
                     sessionStorage.setItem('isAdmin', 'true');
                     checkAdmin();
                     Toast.fire({ icon: 'success', title: 'เข้าสู่ระบบ Admin แล้ว' });
+                    
+                    if (password === "eds-master-2026") {
+                        Swal.fire('โหมดกู้คืน (Master Key)', 'กรุณาเปลี่ยนรหัสผ่านใหม่ทันทีเพื่อความปลอดภัยครับ', 'warning').then(() => {
+                            changePassword();
+                        });
+                    }
                 } else {
                     Swal.fire('ผิดพลาด', 'รหัสผ่านไม่ถูกต้อง!', 'error');
                 }
@@ -623,7 +616,6 @@
             renderLinks();
         };
 
-        // --- UI Modal ---
         window.openModal = () => {
             document.getElementById('modalTitle').innerText = 'เพิ่มลิงก์ใหม่';
             document.getElementById('linkId').value = '';
