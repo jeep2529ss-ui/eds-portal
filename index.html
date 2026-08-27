@@ -30,8 +30,6 @@
         <div class="flex items-center gap-3 font-semibold">
             <i class="fa-solid fa-user-shield text-xl"></i> โหมดผู้ดูแลระบบ (Admin)
         </div>
-        
-        <!-- Admin Tools Menu -->
         <div class="flex flex-wrap gap-2">
             <button onclick="openCategoryModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg text-sm transition">
                 <i class="fa-solid fa-tags mr-1"></i> จัดการหมวดหมู่
@@ -67,7 +65,7 @@
         <div class="flex flex-col md:flex-row gap-4 mb-6">
             <div class="relative flex-grow">
                 <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" onkeyup="renderLinks()" placeholder="ค้นหาชื่อระบบ, คำอธิบาย หรือกลุ่มงาน..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50 text-slate-800">
+                <input type="text" id="searchInput" onkeyup="renderLinks()" placeholder="ค้นหาชื่อระบบ, คำอธิบาย หรือกลุ่มงาน..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 placeholder-slate-400">
             </div>
             <button onclick="openModal()" class="admin-only sys-hidden bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-xl font-medium transition shadow-md whitespace-nowrap">
                 <i class="fa-solid fa-plus mr-2"></i> เพิ่มลิงก์ใหม่
@@ -92,53 +90,63 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อระบบ (Title)</label>
-                        <input type="text" id="linkTitle" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="linkTitle" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-slate-900">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">URL ลิงก์</label>
-                        <input type="url" id="linkUrl" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <input type="url" id="linkUrl" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-slate-900">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">หมวดหมู่</label>
-                            <select id="linkCategory" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"></select>
+                            <select id="linkCategory" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-slate-900"></select>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">กลุ่มงาน</label>
-                            <input type="text" id="linkGroup" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <input type="text" id="linkGroup" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-slate-900">
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">สีการ์ด</label>
-                        <div class="flex gap-2" id="colorPicker">
-                            <button onclick="selectColor('blue')" class="w-8 h-8 rounded-full bg-blue-600 focus:ring-4 ring-offset-2 ring-blue-300"></button>
-                            <button onclick="selectColor('amber')" class="w-8 h-8 rounded-full bg-amber-500 focus:ring-4 ring-offset-2 ring-amber-300"></button>
-                            <button onclick="selectColor('emerald')" class="w-8 h-8 rounded-full bg-emerald-500 focus:ring-4 ring-offset-2 ring-emerald-300"></button>
-                            <button onclick="selectColor('rose')" class="w-8 h-8 rounded-full bg-rose-500 focus:ring-4 ring-offset-2 ring-rose-300"></button>
-                            <button onclick="selectColor('purple')" class="w-8 h-8 rounded-full bg-purple-500 focus:ring-4 ring-offset-2 ring-purple-300"></button>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">สีการ์ด</label>
+                            <div class="flex gap-2" id="colorPicker">
+                                <button onclick="selectColor('blue')" class="w-8 h-8 rounded-full bg-blue-600 focus:ring-4 ring-offset-2 ring-blue-300"></button>
+                                <button onclick="selectColor('amber')" class="w-8 h-8 rounded-full bg-amber-500 focus:ring-4 ring-offset-2 ring-amber-300"></button>
+                                <button onclick="selectColor('emerald')" class="w-8 h-8 rounded-full bg-emerald-500 focus:ring-4 ring-offset-2 ring-emerald-300"></button>
+                                <button onclick="selectColor('rose')" class="w-8 h-8 rounded-full bg-rose-500 focus:ring-4 ring-offset-2 ring-rose-300"></button>
+                                <button onclick="selectColor('purple')" class="w-8 h-8 rounded-full bg-purple-500 focus:ring-4 ring-offset-2 ring-purple-300"></button>
+                            </div>
+                            <input type="hidden" id="linkColor" value="blue">
                         </div>
-                        <input type="hidden" id="linkColor" value="blue">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">โทนสี (Shade)</label>
+                            <select id="linkShade" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-slate-900">
+                                <option value="light">สว่าง (Light)</option>
+                                <option value="medium">กลาง (Medium)</option>
+                                <option value="dark">เข้ม (Dark)</option>
+                            </select>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">ไอคอน</label>
                         <div class="grid grid-cols-5 gap-2 text-center" id="iconPicker">
-                            <button onclick="selectIcon('fa-link')" class="p-2 border rounded hover:bg-slate-100"><i class="fa-solid fa-link"></i></button>
-                            <button onclick="selectIcon('fa-warehouse')" class="p-2 border rounded hover:bg-slate-100"><i class="fa-solid fa-warehouse"></i></button>
-                            <button onclick="selectIcon('fa-boxes-stacked')" class="p-2 border rounded hover:bg-slate-100"><i class="fa-solid fa-boxes-stacked"></i></button>
-                            <button onclick="selectIcon('fa-calendar-check')" class="p-2 border rounded hover:bg-slate-100"><i class="fa-solid fa-calendar-check"></i></button>
-                            <button onclick="selectIcon('fa-file-excel')" class="p-2 border rounded hover:bg-slate-100"><i class="fa-solid fa-file-excel"></i></button>
+                            <button onclick="selectIcon('fa-link')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-link"></i></button>
+                            <button onclick="selectIcon('fa-warehouse')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-warehouse"></i></button>
+                            <button onclick="selectIcon('fa-boxes-stacked')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-boxes-stacked"></i></button>
+                            <button onclick="selectIcon('fa-calendar-check')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-calendar-check"></i></button>
+                            <button onclick="selectIcon('fa-file-excel')" class="p-2 border rounded hover:bg-slate-100 text-slate-600"><i class="fa-solid fa-file-excel"></i></button>
                         </div>
                         <input type="hidden" id="linkIcon" value="fa-link">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">คำอธิบาย</label>
-                        <textarea id="linkDesc" rows="2" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea id="linkDesc" rows="2" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-slate-900"></textarea>
                     </div>
                 </div>
             </div>
             <div class="p-4 border-t bg-slate-50 flex justify-end gap-3">
-                <button onclick="closeModal()" class="px-5 py-2.5 rounded-lg text-slate-600 hover:bg-slate-200">ยกเลิก</button>
-                <button onclick="saveLink()" class="px-5 py-2.5 rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-md">บันทึกข้อมูล</button>
+                <button onclick="closeModal()" class="px-5 py-2.5 rounded-lg text-slate-600 font-medium hover:bg-slate-200">ยกเลิก</button>
+                <button onclick="saveLink()" class="px-5 py-2.5 rounded-lg text-white font-medium bg-blue-600 hover:bg-blue-700 shadow-md">บันทึกข้อมูล</button>
             </div>
         </div>
     </div>
@@ -149,10 +157,10 @@
             <div class="p-6">
                 <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">จัดการหมวดหมู่</h3>
                 <div class="flex gap-2 mb-4">
-                    <input type="text" id="newCatName" placeholder="ชื่อหมวดหมู่ใหม่..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-amber-500">
+                    <input type="text" id="newCatName" placeholder="พิมพ์ชื่อหมวดหมู่ใหม่..." class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 bg-white text-slate-900">
                     <button onclick="addCategory()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium shadow"><i class="fa-solid fa-plus"></i></button>
                 </div>
-                <div id="categoryList" class="space-y-2 max-h-64 overflow-y-auto pr-2"></div>
+                <div id="categoryList" class="space-y-2 max-h-[50vh] overflow-y-auto pr-2"></div>
             </div>
             <div class="p-4 border-t bg-slate-50 flex justify-end">
                 <button onclick="closeCategoryModal()" class="px-5 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-200">ปิด</button>
@@ -165,7 +173,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // --- รหัสประจำเว็บ (ฝังถาวร) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCrc4Gt8Ua7KJZIc_2pR2UTr-76rvKLADc",
             projectId: "eds-portal-21960",
@@ -175,30 +182,50 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- ตัวแปรหลัก ---
-        let dbData = {
-            links: [],
-            categories: [
-                { id: "cct", name: "CCT", badge: "bg-blue-100 text-blue-800" },
-                { id: "she", name: "SHE", badge: "bg-indigo-100 text-indigo-800" },
-                { id: "inventory", name: "Inventory", badge: "bg-cyan-100 text-cyan-800" },
-                { id: "general", name: "ทั่วไป", badge: "bg-slate-100 text-slate-800" }
-            ],
-            settings: { adminPin: "1234" }
-        };
+        let dbData = { links: [], categories: [], settings: { adminPin: "1234" } };
         let currentFilter = 'all';
         let isAdmin = false;
 
-        // --- โหลดข้อมูลจาก Firebase ---
+        // โครงสร้างสีตาม โทน (Shade)
+        const themeMap = {
+            blue: {
+                light: { card: 'bg-white border-slate-100', icon: 'bg-blue-50 text-blue-600 border-blue-100', text1: 'text-slate-800', text2: 'text-slate-500', bar: 'bg-blue-500' },
+                medium: { card: 'bg-blue-50 border-blue-200', icon: 'bg-blue-100 text-blue-700 border-blue-200', text1: 'text-blue-900', text2: 'text-blue-600', bar: 'bg-blue-500' },
+                dark: { card: 'bg-blue-800 border-blue-700', icon: 'bg-blue-700 text-white border-blue-600', text1: 'text-white', text2: 'text-blue-200', bar: 'bg-blue-400' }
+            },
+            amber: {
+                light: { card: 'bg-white border-slate-100', icon: 'bg-amber-50 text-amber-600 border-amber-100', text1: 'text-slate-800', text2: 'text-slate-500', bar: 'bg-amber-500' },
+                medium: { card: 'bg-amber-50 border-amber-200', icon: 'bg-amber-100 text-amber-700 border-amber-200', text1: 'text-amber-900', text2: 'text-amber-700', bar: 'bg-amber-500' },
+                dark: { card: 'bg-amber-600 border-amber-500', icon: 'bg-amber-500 text-white border-amber-400', text1: 'text-white', text2: 'text-amber-100', bar: 'bg-amber-400' }
+            },
+            emerald: {
+                light: { card: 'bg-white border-slate-100', icon: 'bg-emerald-50 text-emerald-600 border-emerald-100', text1: 'text-slate-800', text2: 'text-slate-500', bar: 'bg-emerald-500' },
+                medium: { card: 'bg-emerald-50 border-emerald-200', icon: 'bg-emerald-100 text-emerald-700 border-emerald-200', text1: 'text-emerald-900', text2: 'text-emerald-600', bar: 'bg-emerald-500' },
+                dark: { card: 'bg-emerald-700 border-emerald-600', icon: 'bg-emerald-600 text-white border-emerald-500', text1: 'text-white', text2: 'text-emerald-100', bar: 'bg-emerald-400' }
+            },
+            rose: {
+                light: { card: 'bg-white border-slate-100', icon: 'bg-rose-50 text-rose-600 border-rose-100', text1: 'text-slate-800', text2: 'text-slate-500', bar: 'bg-rose-500' },
+                medium: { card: 'bg-rose-50 border-rose-200', icon: 'bg-rose-100 text-rose-700 border-rose-200', text1: 'text-rose-900', text2: 'text-rose-600', bar: 'bg-rose-500' },
+                dark: { card: 'bg-rose-700 border-rose-600', icon: 'bg-rose-600 text-white border-rose-500', text1: 'text-white', text2: 'text-rose-100', bar: 'bg-rose-400' }
+            },
+            purple: {
+                light: { card: 'bg-white border-slate-100', icon: 'bg-purple-50 text-purple-600 border-purple-100', text1: 'text-slate-800', text2: 'text-slate-500', bar: 'bg-purple-500' },
+                medium: { card: 'bg-purple-50 border-purple-200', icon: 'bg-purple-100 text-purple-700 border-purple-200', text1: 'text-purple-900', text2: 'text-purple-600', bar: 'bg-purple-500' },
+                dark: { card: 'bg-purple-800 border-purple-700', icon: 'bg-purple-700 text-white border-purple-600', text1: 'text-white', text2: 'text-purple-200', bar: 'bg-purple-400' }
+            }
+        };
+
         onValue(ref(db, '/'), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 dbData.links = data.links || [];
-                dbData.categories = data.categories || dbData.categories;
+                dbData.categories = data.categories || [
+                    { id: "cct", name: "CCT", badge: "bg-blue-100 text-blue-800" },
+                    { id: "she", name: "SHE", badge: "bg-indigo-100 text-indigo-800" },
+                    { id: "inventory", name: "Inventory", badge: "bg-cyan-100 text-cyan-800" },
+                    { id: "general", name: "ทั่วไป", badge: "bg-slate-100 text-slate-800" }
+                ];
                 dbData.settings = data.settings || dbData.settings;
-            } else {
-                // ถ้าเป็นฐานข้อมูลเปล่า ให้สร้างโครงสร้างเริ่มต้น
-                set(ref(db, '/'), dbData);
             }
             
             document.getElementById('db-status').innerHTML = '<i class="fa-solid fa-circle text-emerald-500"></i> <span class="text-emerald-400">ออนไลน์ (Firebase)</span>';
@@ -208,20 +235,13 @@
             renderTabs();
             renderLinks();
             renderCategoryList();
-        }, (error) => {
-            document.getElementById('db-status').innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500"></i> <span class="text-red-400">ออฟไลน์</span>';
         });
 
-        // --- ฟังก์ชันบันทึกลงฐานข้อมูลหลัก ---
         window.saveToFirebase = async () => {
-            try {
-                await set(ref(db, '/'), dbData);
-            } catch (error) {
-                alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
-            }
+            try { await set(ref(db, '/'), dbData); } 
+            catch (error) { alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message); }
         };
 
-        // --- Render UI ---
         window.renderTabs = () => {
             const tabsDiv = document.getElementById('category-tabs');
             let html = `<button onclick="setFilter('all')" class="px-5 py-2 rounded-full font-medium transition ${currentFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100'}">ทั้งหมด (${dbData.links.length})</button>`;
@@ -247,7 +267,6 @@
                 return matchCat && matchSearch;
             });
 
-            // Stats
             let statsHtml = `<div class="bg-white rounded-xl p-4 text-center shadow-sm"><div class="text-slate-500 text-sm font-medium mb-1">ลิงก์รวม</div><div class="text-3xl font-bold text-slate-800">${dbData.links.length}</div></div>`;
             dbData.categories.forEach(c => {
                 const count = dbData.links.filter(l => l.category === c.id).length;
@@ -255,46 +274,39 @@
             });
             stats.innerHTML = statsHtml;
 
-            // Cards
             grid.innerHTML = filtered.map(link => {
                 const catInfo = dbData.categories.find(c => c.id === link.category) || dbData.categories[0];
-                const colorMap = {
-                    blue: { bg: 'bg-blue-600', text: 'text-blue-800', light: 'bg-blue-50', border: 'border-blue-200' },
-                    amber: { bg: 'bg-amber-500', text: 'text-amber-800', light: 'bg-amber-50', border: 'border-amber-200' },
-                    emerald: { bg: 'bg-emerald-600', text: 'text-emerald-800', light: 'bg-emerald-50', border: 'border-emerald-200' },
-                    rose: { bg: 'bg-rose-600', text: 'text-rose-800', light: 'bg-rose-50', border: 'border-rose-200' },
-                    purple: { bg: 'bg-purple-600', text: 'text-purple-800', light: 'bg-purple-50', border: 'border-purple-200' }
-                };
-                const theme = colorMap[link.color] || colorMap.blue;
+                const c = link.color || 'blue';
+                const s = link.shade || 'light';
+                const theme = themeMap[c] ? themeMap[c][s] : themeMap.blue.light;
 
                 return `
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col h-full card-hover relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-2 ${theme.bg}"></div>
+                <div class="rounded-2xl p-6 shadow-sm border flex flex-col h-full card-hover relative overflow-hidden ${theme.card}">
+                    <div class="absolute top-0 left-0 w-full h-2 ${theme.bar}"></div>
                     <div class="flex justify-between items-start mb-4 mt-2">
-                        <div class="w-12 h-12 rounded-xl ${theme.light} text-2xl flex items-center justify-center ${theme.text} shadow-sm border ${theme.border}">
+                        <div class="w-12 h-12 rounded-xl text-2xl flex items-center justify-center shadow-sm border ${theme.icon}">
                             <i class="fa-solid ${link.icon}"></i>
                         </div>
                         <div class="text-right">
-                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${catInfo.badge}">${catInfo.name}</span>
-                            ${link.group ? `<div class="text-[10px] text-slate-400 mt-1 uppercase tracking-wider">${link.group}</div>` : ''}
+                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/80 text-slate-800 shadow-sm">${catInfo.name}</span>
+                            ${link.group ? `<div class="text-[10px] mt-1 uppercase tracking-wider ${theme.text2}">${link.group}</div>` : ''}
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-800 leading-tight mb-2">${link.title}</h3>
-                    <p class="text-sm text-slate-500 mb-6 flex-grow line-clamp-2">${link.desc || ''}</p>
+                    <h3 class="text-lg font-bold leading-tight mb-2 ${theme.text1}">${link.title}</h3>
+                    <p class="text-sm mb-6 flex-grow line-clamp-2 ${theme.text2}">${link.desc || ''}</p>
                     <div class="mt-auto">
-                        <a href="${link.url}" target="_blank" class="block w-full text-center py-3 rounded-xl font-semibold text-white ${theme.bg} hover:opacity-90 transition shadow-md">
+                        <a href="${link.url}" target="_blank" class="block w-full text-center py-3 rounded-xl font-semibold text-white ${theme.bar} hover:opacity-90 transition shadow-md">
                             เปิดลิงก์ <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-sm"></i>
                         </a>
-                        <div class="admin-only sys-hidden flex justify-end gap-2 mt-3 pt-3 border-t border-slate-100">
-                            <button onclick="editLink(${link.id})" class="text-slate-400 hover:text-amber-500 bg-slate-50 hover:bg-amber-50 w-8 h-8 rounded-lg transition"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteLink(${link.id})" class="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 w-8 h-8 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+                        <div class="admin-only sys-hidden flex justify-end gap-2 mt-3 pt-3 border-t border-black/5">
+                            <button onclick="editLink(${link.id})" class="text-slate-400 hover:text-amber-500 bg-black/5 hover:bg-black/10 w-8 h-8 rounded-lg transition"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteLink(${link.id})" class="text-slate-400 hover:text-red-500 bg-black/5 hover:bg-black/10 w-8 h-8 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 </div>`;
             }).join('');
         };
 
-        // --- จัดการลิงก์ (เพิ่ม/ลบ/แก้ไข) ---
         window.saveLink = () => {
             const id = document.getElementById('linkId').value;
             const link = {
@@ -304,6 +316,7 @@
                 category: document.getElementById('linkCategory').value,
                 group: document.getElementById('linkGroup').value,
                 color: document.getElementById('linkColor').value,
+                shade: document.getElementById('linkShade').value,
                 icon: document.getElementById('linkIcon').value,
                 desc: document.getElementById('linkDesc').value
             };
@@ -313,9 +326,7 @@
             if (id) {
                 const index = dbData.links.findIndex(l => l.id === parseInt(id));
                 if (index !== -1) dbData.links[index] = link;
-            } else {
-                dbData.links.push(link);
-            }
+            } else { dbData.links.push(link); }
             saveToFirebase();
             closeModal();
         };
@@ -335,62 +346,76 @@
                 document.getElementById('linkTitle').value = link.title;
                 document.getElementById('linkUrl').value = link.url;
                 
-                // อัปเดต Dropdown หมวดหมู่ก่อนเลือก
                 const catSelect = document.getElementById('linkCategory');
                 catSelect.innerHTML = dbData.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
                 document.getElementById('linkCategory').value = link.category;
                 
                 document.getElementById('linkGroup').value = link.group || '';
                 document.getElementById('linkDesc').value = link.desc || '';
+                document.getElementById('linkShade').value = link.shade || 'light';
                 selectColor(link.color || 'blue');
                 selectIcon(link.icon || 'fa-link');
                 document.getElementById('linkModal').classList.remove('sys-hidden');
             }
         };
 
-        // --- จัดการหมวดหมู่ (Categories) ---
+        // --- ระบบจัดการหมวดหมู่แบบใหม่ (จัดเรียง / พิมพ์แก้ไขได้) ---
         window.renderCategoryList = () => {
             const list = document.getElementById('categoryList');
-            list.innerHTML = dbData.categories.map(c => `
-                <div class="flex justify-between items-center p-3 bg-slate-50 border rounded-lg">
-                    <span class="font-medium text-slate-700">${c.name} (รหัส: ${c.id})</span>
-                    <button onclick="deleteCategory('${c.id}')" class="text-red-500 hover:bg-red-100 p-2 rounded transition"><i class="fa-solid fa-trash"></i></button>
+            list.innerHTML = dbData.categories.map((c, index) => `
+                <div class="flex items-center gap-2 p-2 bg-slate-50 border rounded-lg">
+                    <div class="flex flex-col">
+                        <button onclick="moveCat(${index}, -1)" class="text-slate-400 hover:text-blue-600 leading-none p-1" ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}><i class="fa-solid fa-caret-up"></i></button>
+                        <button onclick="moveCat(${index}, 1)" class="text-slate-400 hover:text-blue-600 leading-none p-1" ${index === dbData.categories.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}><i class="fa-solid fa-caret-down"></i></button>
+                    </div>
+                    <input type="text" value="${c.name}" onchange="updateCatName('${c.id}', this.value)" class="flex-grow p-1.5 border border-slate-300 rounded text-slate-900 bg-white focus:ring-2 focus:ring-amber-500" title="พิมพ์เพื่อแก้ชื่อหมวดหมู่">
+                    <button onclick="deleteCategory('${c.id}')" class="text-red-500 hover:bg-red-100 p-2 rounded transition" title="ลบหมวดหมู่"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `).join('');
+        };
+
+        window.moveCat = (index, dir) => {
+            if (index + dir < 0 || index + dir >= dbData.categories.length) return;
+            const temp = dbData.categories[index];
+            dbData.categories[index] = dbData.categories[index + dir];
+            dbData.categories[index + dir] = temp;
+            saveToFirebase(); // สลับตำแหน่งแล้วเซฟเลย
+        };
+
+        window.updateCatName = (id, newName) => {
+            const cat = dbData.categories.find(c => c.id === id);
+            if (cat && newName.trim() !== '') {
+                cat.name = newName.trim();
+                saveToFirebase(); // พิมพ์แก้ชื่อปุ๊บ เซฟลงฐานข้อมูลปั๊บ
+            }
         };
 
         window.addCategory = () => {
             const name = document.getElementById('newCatName').value.trim();
             if (!name) return;
-            const id = name.toLowerCase().replace(/[^a-z0-9]/g, ''); // สร้าง id อัตโนมัติจากชื่อ
+            const id = name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'cat_' + Date.now(); 
             if (dbData.categories.find(c => c.id === id)) return alert('หมวดหมู่นี้มีอยู่แล้ว');
             
-            dbData.categories.push({
-                id: id,
-                name: name,
-                badge: "bg-slate-100 text-slate-800" // สีเริ่มต้น
-            });
+            dbData.categories.push({ id: id, name: name, badge: "bg-slate-100 text-slate-800" });
             document.getElementById('newCatName').value = '';
-            saveToFirebase(); // บันทึกลงฐานข้อมูลทันที
+            saveToFirebase(); 
         };
 
         window.deleteCategory = (id) => {
-            if(dbData.links.find(l => l.category === id)) {
-                return alert('ไม่สามารถลบได้ เนื่องจากมีลิงก์ที่ใช้หมวดหมู่นี้อยู่');
-            }
+            if(dbData.links.find(l => l.category === id)) return alert('ไม่สามารถลบได้ เนื่องจากมีลิงก์ที่ใช้หมวดหมู่นี้อยู่');
             if (confirm('ยืนยันการลบหมวดหมู่นี้?')) {
                 dbData.categories = dbData.categories.filter(c => c.id !== id);
                 saveToFirebase();
             }
         };
 
-        // --- Backup & Restore (สำรอง/กู้คืนข้อมูล) ---
+        // --- Backup & Restore ---
         window.backupData = () => {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dbData, null, 2));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `eds_backup_${new Date().toISOString().slice(0,10)}.json`);
-            dlAnchorElem.click();
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `eds_backup_${new Date().toISOString().slice(0,10)}.json`);
+            dl.click();
         };
 
         window.restoreData = (event) => {
@@ -404,26 +429,21 @@
                         dbData = importedData;
                         saveToFirebase();
                         alert('กู้คืนข้อมูลสำเร็จ!');
-                    } else {
-                        alert('รูปแบบไฟล์ไม่ถูกต้อง');
-                    }
-                } catch (err) {
-                    alert('เกิดข้อผิดพลาดในการอ่านไฟล์');
-                }
+                    } else { alert('รูปแบบไฟล์ไม่ถูกต้อง'); }
+                } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); }
             };
             reader.readAsText(file);
         };
 
-        // --- ระบบความปลอดภัย (เปลี่ยนรหัส/ล็อกอิน) ---
+        // --- Admin & Security ---
         window.changePassword = () => {
             const oldPass = prompt("กรุณาใส่รหัสผ่าน 'ปัจจุบัน':");
             if (oldPass !== dbData.settings.adminPin) return alert("รหัสผ่านเดิมไม่ถูกต้อง!");
-            
             const newPass = prompt("ตั้งรหัสผ่าน 'ใหม่' (ตัวเลข 4-6 หลัก):");
             if (newPass && newPass.trim() !== "") {
                 dbData.settings.adminPin = newPass.trim();
                 saveToFirebase();
-                alert("เปลี่ยนรหัสผ่านสำเร็จ! กรุณาจดจำรหัสใหม่ไว้ให้ดี");
+                alert("เปลี่ยนรหัสผ่านสำเร็จ!");
             }
         };
 
@@ -450,9 +470,7 @@
             if (prompt("กรุณาใส่รหัสผ่านผู้ดูแลระบบ:") === dbData.settings.adminPin) {
                 sessionStorage.setItem('isAdmin', 'true');
                 checkAdmin();
-            } else {
-                alert("รหัสผ่านไม่ถูกต้อง");
-            }
+            } else { alert("รหัสผ่านไม่ถูกต้อง"); }
         };
 
         window.logoutAdmin = () => {
@@ -460,7 +478,7 @@
             checkAdmin();
         };
 
-        // --- UI Modal ทั่วไป ---
+        // --- UI Modal ---
         window.openModal = () => {
             document.getElementById('modalTitle').innerText = 'เพิ่มลิงก์ใหม่';
             document.getElementById('linkId').value = '';
@@ -468,6 +486,7 @@
             document.getElementById('linkUrl').value = '';
             document.getElementById('linkGroup').value = '';
             document.getElementById('linkDesc').value = '';
+            document.getElementById('linkShade').value = 'light';
             selectColor('blue');
             selectIcon('fa-link');
             const catSelect = document.getElementById('linkCategory');
@@ -493,7 +512,6 @@
             btn.classList.add('bg-blue-100', 'border-blue-500');
             btn.classList.remove('border');
         };
-
     </script>
 </body>
 </html>
