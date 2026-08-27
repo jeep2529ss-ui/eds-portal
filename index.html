@@ -7,12 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- นำเข้า SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { font-family: 'Prompt', sans-serif; background-color: #0f172a; color: #f8fafc; }
         .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); color: #1e293b; border-radius: 1rem; }
         .sys-hidden { display: none !important; }
         .card-hover { transition: all 0.3s ease; }
         .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); }
+        .swal2-title { font-family: 'Prompt', sans-serif !important; }
+        .swal2-html-container { font-family: 'Prompt', sans-serif !important; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -186,7 +190,15 @@
         let currentFilter = 'all';
         let isAdmin = false;
 
-        // โครงสร้างสีตาม โทน (Shade)
+        // การตั้งค่า Toast แบบมุมขวาบน (ไม่กวนสายตา)
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
+
         const themeMap = {
             blue: {
                 light: { card: 'bg-white border-slate-100', icon: 'bg-blue-50 text-blue-600 border-blue-100', text1: 'text-slate-800', text2: 'text-slate-500', bar: 'bg-blue-500' },
@@ -238,8 +250,12 @@
         });
 
         window.saveToFirebase = async () => {
-            try { await set(ref(db, '/'), dbData); } 
-            catch (error) { alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message); }
+            try { 
+                await set(ref(db, '/'), dbData); 
+            } 
+            catch (error) { 
+                Swal.fire('เกิดข้อผิดพลาด', error.message, 'error'); 
+            }
         };
 
         window.renderTabs = () => {
@@ -274,13 +290,11 @@
             });
             stats.innerHTML = statsHtml;
 
-            grid.innerHTML = filtered.map(link => {
+            grid.innerHTML = filtered.map((link, index) => {
                 const catInfo = dbData.categories.find(c => c.id === link.category) || dbData.categories[0];
                 const c = link.color || 'blue';
                 const s = link.shade || 'light';
                 const theme = themeMap[c] ? themeMap[c][s] : themeMap.blue.light;
-                
-                // เช็คสถานะแอดมิน เพื่อเปิดปุ่มแก้ไขในการ์ดแต่ละใบแบบ Realtime
                 const adminVisibility = isAdmin ? '' : 'sys-hidden';
 
                 return `
@@ -301,13 +315,46 @@
                         <a href="${link.url}" target="_blank" class="block w-full text-center py-3 rounded-xl font-semibold text-white ${theme.bar} hover:opacity-90 transition shadow-md">
                             เปิดลิงก์ <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-sm"></i>
                         </a>
-                        <div class="admin-only ${adminVisibility} flex justify-end gap-2 mt-3 pt-3 border-t border-black/5">
-                            <button onclick="editLink(${link.id})" class="text-slate-500 hover:text-amber-500 bg-black/5 hover:bg-amber-100 w-8 h-8 rounded-lg transition" title="แก้ไขการ์ดนี้"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteLink(${link.id})" class="text-slate-500 hover:text-red-500 bg-black/5 hover:bg-red-100 w-8 h-8 rounded-lg transition" title="ลบการ์ดนี้"><i class="fa-solid fa-trash"></i></button>
+                        <!-- ปุ่ม Admin ควบคุมการ์ด -->
+                        <div class="admin-only ${adminVisibility} flex justify-between items-center mt-3 pt-3 border-t border-black/5">
+                            <div class="flex gap-1">
+                                <button onclick="moveLink(${link.id}, -1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนมาด้านหน้า"><i class="fa-solid fa-arrow-left"></i></button>
+                                <button onclick="moveLink(${link.id}, 1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนไปด้านหลัง"><i class="fa-solid fa-arrow-right"></i></button>
+                            </div>
+                            <div class="flex gap-1">
+                                <button onclick="editLink(${link.id})" class="text-slate-500 hover:text-amber-500 bg-black/5 hover:bg-amber-100 w-8 h-8 rounded-lg transition" title="แก้ไขการ์ดนี้"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteLink(${link.id})" class="text-slate-500 hover:text-red-500 bg-black/5 hover:bg-red-100 w-8 h-8 rounded-lg transition" title="ลบการ์ดนี้"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>
                     </div>
                 </div>`;
             }).join('');
+        };
+
+        // --- ระบบจัดเรียงลิงก์ (การ์ด) ---
+        window.moveLink = (id, dir) => {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = dbData.links.filter(l => {
+                const matchCat = currentFilter === 'all' || l.category === currentFilter;
+                const matchSearch = l.title.toLowerCase().includes(search) || (l.desc && l.desc.toLowerCase().includes(search)) || (l.group && l.group.toLowerCase().includes(search));
+                return matchCat && matchSearch;
+            });
+            
+            const filteredIndex = filtered.findIndex(l => l.id === id);
+            if(filteredIndex === -1) return;
+            const targetFilteredIndex = filteredIndex + dir;
+            if(targetFilteredIndex < 0 || targetFilteredIndex >= filtered.length) return; 
+            
+            const targetId = filtered[targetFilteredIndex].id;
+            const realIndex1 = dbData.links.findIndex(l => l.id === id);
+            const realIndex2 = dbData.links.findIndex(l => l.id === targetId);
+            
+            // สลับตำแหน่งในระบบ
+            const temp = dbData.links[realIndex1];
+            dbData.links[realIndex1] = dbData.links[realIndex2];
+            dbData.links[realIndex2] = temp;
+            
+            saveToFirebase();
         };
 
         window.saveLink = () => {
@@ -324,21 +371,38 @@
                 desc: document.getElementById('linkDesc').value
             };
 
-            if (!link.title || !link.url) return alert('กรุณากรอกชื่อและ URL');
+            if (!link.title || !link.url) {
+                return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อและ URL ของลิงก์', 'warning');
+            }
 
             if (id) {
                 const index = dbData.links.findIndex(l => l.id === parseInt(id));
                 if (index !== -1) dbData.links[index] = link;
             } else { dbData.links.push(link); }
-            saveToFirebase();
-            closeModal();
+            
+            saveToFirebase().then(() => {
+                closeModal();
+                Toast.fire({ icon: 'success', title: 'บันทึกลิงก์สำเร็จ' });
+            });
         };
 
         window.deleteLink = (id) => {
-            if (confirm('ยืนยันการลบลิงก์นี้?')) {
-                dbData.links = dbData.links.filter(l => l.id !== id);
-                saveToFirebase();
-            }
+            Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: "ลบแล้วจะไม่สามารถกู้คืนได้!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'ใช่, ลบทิ้งเลย',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    dbData.links = dbData.links.filter(l => l.id !== id);
+                    saveToFirebase();
+                    Toast.fire({ icon: 'success', title: 'ลบการ์ดเรียบร้อย' });
+                }
+            });
         };
 
         window.editLink = (id) => {
@@ -362,7 +426,7 @@
             }
         };
 
-        // --- ระบบจัดการหมวดหมู่แบบใหม่ ---
+        // --- ระบบจัดการหมวดหมู่ ---
         window.renderCategoryList = () => {
             const list = document.getElementById('categoryList');
             list.innerHTML = dbData.categories.map((c, index) => `
@@ -389,7 +453,9 @@
             const cat = dbData.categories.find(c => c.id === id);
             if (cat && newName.trim() !== '') {
                 cat.name = newName.trim();
-                saveToFirebase(); 
+                saveToFirebase().then(() => {
+                    Toast.fire({ icon: 'success', title: 'อัปเดตชื่อหมวดหมู่แล้ว' });
+                });
             }
         };
 
@@ -397,19 +463,36 @@
             const name = document.getElementById('newCatName').value.trim();
             if (!name) return;
             const id = name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'cat_' + Date.now(); 
-            if (dbData.categories.find(c => c.id === id)) return alert('หมวดหมู่นี้มีอยู่แล้ว');
+            if (dbData.categories.find(c => c.id === id)) {
+                return Swal.fire('ผิดพลาด', 'หมวดหมู่นี้มีอยู่แล้ว', 'error');
+            }
             
             dbData.categories.push({ id: id, name: name, badge: "bg-slate-100 text-slate-800" });
             document.getElementById('newCatName').value = '';
-            saveToFirebase(); 
+            saveToFirebase().then(() => {
+                Toast.fire({ icon: 'success', title: 'เพิ่มหมวดหมู่ใหม่แล้ว' });
+            });
         };
 
         window.deleteCategory = (id) => {
-            if(dbData.links.find(l => l.category === id)) return alert('ไม่สามารถลบได้ เนื่องจากมีลิงก์ที่ใช้หมวดหมู่นี้อยู่');
-            if (confirm('ยืนยันการลบหมวดหมู่นี้?')) {
-                dbData.categories = dbData.categories.filter(c => c.id !== id);
-                saveToFirebase();
+            if(dbData.links.find(l => l.category === id)) {
+                return Swal.fire('ลบไม่ได้', 'มีการ์ดลิงก์ที่ใช้หมวดหมู่นี้อยู่ กรุณาย้ายการ์ดก่อน', 'error');
             }
+            Swal.fire({
+                title: 'ลบหมวดหมู่?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'ลบเลย',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    dbData.categories = dbData.categories.filter(c => c.id !== id);
+                    saveToFirebase();
+                    Toast.fire({ icon: 'success', title: 'ลบหมวดหมู่แล้ว' });
+                }
+            });
         };
 
         // --- Backup & Restore ---
@@ -419,6 +502,7 @@
             dl.setAttribute("href", dataStr);
             dl.setAttribute("download", `eds_backup_${new Date().toISOString().slice(0,10)}.json`);
             dl.click();
+            Toast.fire({ icon: 'info', title: 'ดาวน์โหลดไฟล์สำรองแล้ว' });
         };
 
         window.restoreData = (event) => {
@@ -431,23 +515,85 @@
                     if (importedData.links && importedData.categories) {
                         dbData = importedData;
                         saveToFirebase();
-                        alert('กู้คืนข้อมูลสำเร็จ!');
-                    } else { alert('รูปแบบไฟล์ไม่ถูกต้อง'); }
-                } catch (err) { alert('เกิดข้อผิดพลาดในการอ่านไฟล์'); }
+                        Swal.fire('สำเร็จ', 'กู้คืนข้อมูลระบบเรียบร้อยแล้ว!', 'success');
+                    } else { Swal.fire('ผิดพลาด', 'รูปแบบไฟล์ไม่ถูกต้อง', 'error'); }
+                } catch (err) { Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาดในการอ่านไฟล์', 'error'); }
             };
             reader.readAsText(file);
         };
 
-        // --- Admin & Security ---
-        window.changePassword = () => {
-            const oldPass = prompt("กรุณาใส่รหัสผ่าน 'ปัจจุบัน':");
-            if (oldPass !== dbData.settings.adminPin) return alert("รหัสผ่านเดิมไม่ถูกต้อง!");
-            const newPass = prompt("ตั้งรหัสผ่าน 'ใหม่' (ตัวเลข 4-6 หลัก):");
+        // --- Admin & Security (SweetAlert Version) ---
+        window.changePassword = async () => {
+            const { value: oldPass } = await Swal.fire({
+                title: 'รหัสผ่านปัจจุบัน',
+                input: 'password',
+                inputPlaceholder: 'กรอกรหัสผ่านเดิม...',
+                showCancelButton: true,
+                confirmButtonText: 'ถัดไป',
+                cancelButtonText: 'ยกเลิก'
+            });
+            if (!oldPass) return;
+            if (oldPass !== dbData.settings.adminPin && oldPass !== "eds-master-2026") {
+                return Swal.fire('ผิดพลาด', 'รหัสผ่านเดิมไม่ถูกต้อง!', 'error');
+            }
+            
+            const { value: newPass } = await Swal.fire({
+                title: 'ตั้งรหัสผ่านใหม่',
+                input: 'password',
+                inputPlaceholder: 'กรอกรหัสผ่านใหม่ (4-10 หลัก)...',
+                showCancelButton: true,
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก'
+            });
+
             if (newPass && newPass.trim() !== "") {
                 dbData.settings.adminPin = newPass.trim();
                 saveToFirebase();
-                alert("เปลี่ยนรหัสผ่านสำเร็จ!");
+                Swal.fire('สำเร็จ!', 'เปลี่ยนรหัสผ่านใหม่เรียบร้อยแล้ว', 'success');
             }
+        };
+
+        window.promptLogin = async () => {
+            const { value: password } = await Swal.fire({
+                title: 'โหมดผู้ดูแลระบบ',
+                input: 'password',
+                inputPlaceholder: 'กรอกรหัสผ่าน 4 หลัก...',
+                showCancelButton: true,
+                confirmButtonText: 'เข้าสู่ระบบ',
+                cancelButtonText: 'ยกเลิก',
+                footer: '<a href="#" onclick="forgotPassword()" class="text-amber-600 font-semibold hover:underline">ลืมรหัสผ่าน?</a>'
+            });
+
+            if (password) {
+                if (password === dbData.settings.adminPin || password === "eds-master-2026") {
+                    sessionStorage.setItem('isAdmin', 'true');
+                    checkAdmin();
+                    Toast.fire({ icon: 'success', title: 'เข้าสู่ระบบ Admin แล้ว' });
+                    
+                    if (password === "eds-master-2026") {
+                        Swal.fire('โหมดกู้คืน (Master Key)', 'กรุณาเปลี่ยนรหัสผ่านใหม่ทันทีเพื่อความปลอดภัยครับ', 'warning').then(() => {
+                            changePassword();
+                        });
+                    }
+                } else {
+                    Swal.fire('ผิดพลาด', 'รหัสผ่านไม่ถูกต้อง!', 'error');
+                }
+            }
+        };
+
+        window.forgotPassword = () => {
+            Swal.fire({
+                icon: 'info',
+                title: 'กู้คืนรหัสผ่าน',
+                html: 'หากคุณลืมรหัสผ่าน สามารถใช้รหัสผ่านฉุกเฉิน (Master Key)<br><br><b class="text-xl text-red-500 bg-slate-100 p-2 rounded">eds-master-2026</b><br><br>พิมพ์รหัสนี้ลงในช่องล็อกอิน เพื่อเข้าสู่ระบบและไปตั้งรหัสใหม่ครับ',
+                confirmButtonText: 'เข้าใจแล้ว'
+            });
+        };
+
+        window.logoutAdmin = () => {
+            sessionStorage.removeItem('isAdmin');
+            checkAdmin();
+            Toast.fire({ icon: 'info', title: 'ออกจากระบบแล้ว' });
         };
 
         window.checkAdmin = () => {
@@ -467,21 +613,7 @@
                 adminPanel.classList.remove('flex');
                 btnLogin.classList.remove('sys-hidden');
             }
-            
-            // รีเฟรชลิงก์เพื่อโชว์/ซ่อน ปุ่มแก้ไขในการ์ด
             renderLinks();
-        };
-
-        window.promptLogin = () => {
-            if (prompt("กรุณาใส่รหัสผ่านผู้ดูแลระบบ:") === dbData.settings.adminPin) {
-                sessionStorage.setItem('isAdmin', 'true');
-                checkAdmin();
-            } else { alert("รหัสผ่านไม่ถูกต้อง"); }
-        };
-
-        window.logoutAdmin = () => {
-            sessionStorage.removeItem('isAdmin');
-            checkAdmin();
         };
 
         // --- UI Modal ---
@@ -500,7 +632,6 @@
             document.getElementById('linkModal').classList.remove('sys-hidden');
         };
         window.closeModal = () => document.getElementById('linkModal').classList.add('sys-hidden');
-        
         window.openCategoryModal = () => document.getElementById('categoryModal').classList.remove('sys-hidden');
         window.closeCategoryModal = () => document.getElementById('categoryModal').classList.add('sys-hidden');
 
