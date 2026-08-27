@@ -196,7 +196,7 @@
         let dbData = { links: [], categories: [], settings: { adminPin: "1234" } };
         let currentFilter = 'all';
         let isAdmin = false;
-        let currentView = 'grid';
+        let currentView = 'list'; // เปลี่ยนค่าเริ่มต้นเป็น List ให้ตรงกับรูปภาพ
 
         const Toast = Swal.mixin({
             toast: true,
@@ -279,7 +279,6 @@
 
         window.renderTabs = () => {
             const tabsDiv = document.getElementById('category-tabs');
-            // คนทั่วไปจะเห็นจำนวนตัวเลขเฉพาะลิงก์ที่ "ไม่ได้ถูกซ่อน"
             const visibleLinks = dbData.links.filter(l => isAdmin || !l.isHidden);
             let html = `<button onclick="setFilter('all')" class="px-5 py-2 rounded-full font-medium transition ${currentFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100'}">ทั้งหมด (${visibleLinks.length})</button>`;
             
@@ -304,13 +303,25 @@
             }
             
             let filtered = dbData.links.filter(l => {
-                // ถ้าไม่ใช่ Admin และการ์ดตั้งค่าซ่อนไว้ -> ให้กรองออก ไม่แสดงผลเลย
                 if (!isAdmin && l.isHidden) return false;
-
                 const matchCat = currentFilter === 'all' || l.category === currentFilter;
                 const matchSearch = l.title.toLowerCase().includes(search) || (l.desc && l.desc.toLowerCase().includes(search)) || (l.group && l.group.toLowerCase().includes(search));
                 return matchCat && matchSearch;
             });
+
+            // --- จัดเรียงตามหมวดหมู่เมื่ออยู่หน้า "ทั้งหมด" ---
+            if (currentFilter === 'all') {
+                const catOrder = {};
+                // เก็บค่า Index ของแต่ละหมวดหมู่ เพื่อนำมาใช้เทียบเรียงลำดับ
+                dbData.categories.forEach((c, i) => catOrder[c.id] = i);
+                
+                filtered.sort((a, b) => {
+                    const orderA = catOrder[a.category] ?? 999;
+                    const orderB = catOrder[b.category] ?? 999;
+                    return orderA - orderB;
+                });
+            }
+            // ----------------------------------------------------
 
             grid.innerHTML = filtered.map((link, index) => {
                 const catInfo = dbData.categories.find(c => c.id === link.category) || dbData.categories[0];
@@ -319,7 +330,6 @@
                 const theme = themeMap[c] ? themeMap[c][s] : themeMap.blue.light;
                 const adminVisibility = isAdmin ? '' : 'sys-hidden';
                 
-                // ตรวจสอบและแสดงผลความโปร่งแสง/ป้ายซ่อน สำหรับ Admin
                 const isHidden = link.isHidden === true;
                 const hiddenStyle = isHidden ? 'opacity-60 grayscale-[30%]' : '';
                 const hiddenBadge = isHidden ? `<span class="bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold ml-2 shadow-sm animate-pulse">ซ่อนอยู่</span>` : '';
@@ -350,7 +360,6 @@
                                     <button onclick="moveLink(${link.id}, 1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนไปขวา"><i class="fa-solid fa-arrow-right"></i></button>
                                 </div>
                                 <div class="flex gap-1">
-                                    <!-- ปุ่มเปิด/ปิดตา -->
                                     <button onclick="toggleVisibility(${link.id})" class="text-slate-500 hover:text-slate-800 bg-black/5 hover:bg-slate-200 w-8 h-8 rounded-lg transition" title="${isHidden ? 'กดเพื่อเปิดแสดงผล' : 'กดเพื่อซ่อนการ์ด'}"><i class="fa-solid ${eyeIcon}"></i></button>
                                     <button onclick="editLink(${link.id})" class="text-slate-500 hover:text-amber-500 bg-black/5 hover:bg-amber-100 w-8 h-8 rounded-lg transition" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
                                     <button onclick="deleteLink(${link.id})" class="text-slate-500 hover:text-red-500 bg-black/5 hover:bg-red-100 w-8 h-8 rounded-lg transition" title="ลบ"><i class="fa-solid fa-trash"></i></button>
@@ -377,7 +386,6 @@
                             <div class="admin-only ${adminVisibility} flex gap-1">
                                 <button onclick="moveLink(${link.id}, -1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนขึ้น"><i class="fa-solid fa-arrow-up"></i></button>
                                 <button onclick="moveLink(${link.id}, 1)" class="text-slate-400 hover:text-blue-500 bg-black/5 hover:bg-blue-100 w-8 h-8 rounded-lg transition" title="เลื่อนลง"><i class="fa-solid fa-arrow-down"></i></button>
-                                <!-- ปุ่มเปิด/ปิดตา -->
                                 <button onclick="toggleVisibility(${link.id})" class="text-slate-500 hover:text-slate-800 bg-black/5 hover:bg-slate-200 w-8 h-8 rounded-lg transition" title="${isHidden ? 'กดเพื่อเปิดแสดงผล' : 'กดเพื่อซ่อนการ์ด'}"><i class="fa-solid ${eyeIcon}"></i></button>
                                 <button onclick="editLink(${link.id})" class="text-slate-500 hover:text-amber-500 bg-black/5 hover:bg-amber-100 w-8 h-8 rounded-lg transition" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
                                 <button onclick="deleteLink(${link.id})" class="text-slate-500 hover:text-red-500 bg-black/5 hover:bg-red-100 w-8 h-8 rounded-lg transition" title="ลบ"><i class="fa-solid fa-trash"></i></button>
@@ -391,14 +399,13 @@
             }).join('');
         };
 
-        // --- ระบบสลับการมองเห็น (Hide/Show) ---
         window.toggleVisibility = (id) => {
             const index = dbData.links.findIndex(l => l.id === id);
             if(index !== -1) {
                 dbData.links[index].isHidden = !dbData.links[index].isHidden;
                 saveToFirebase().then(() => {
                     Toast.fire({ icon: 'success', title: dbData.links[index].isHidden ? 'ซ่อนการ์ดเรียบร้อย' : 'เปิดแสดงผลการ์ดแล้ว' });
-                    renderTabs(); // อัปเดตตัวเลขจำนวนด้านบนด้วย
+                    renderTabs(); 
                 });
             }
         };
@@ -410,6 +417,13 @@
                 const matchSearch = l.title.toLowerCase().includes(search) || (l.desc && l.desc.toLowerCase().includes(search)) || (l.group && l.group.toLowerCase().includes(search));
                 return matchCat && matchSearch;
             });
+            
+            // ใช้ตรรกะจัดกลุ่มเดียวกับ renderLinks เพื่อให้หา Index การสลับตำแหน่งได้อย่างถูกต้อง
+            if (currentFilter === 'all') {
+                const catOrder = {};
+                dbData.categories.forEach((c, i) => catOrder[c.id] = i);
+                filtered.sort((a, b) => (catOrder[a.category] ?? 999) - (catOrder[b.category] ?? 999));
+            }
             
             const filteredIndex = filtered.findIndex(l => l.id === id);
             if(filteredIndex === -1) return;
@@ -429,8 +443,6 @@
 
         window.saveLink = () => {
             const id = document.getElementById('linkId').value;
-            
-            // ดึงค่า isHidden ของเดิมมาด้วย เพื่อไม่ให้ค่าซ่อน/แสดงเพี้ยนเวลาแก้ข้อมูล
             let currentHidden = false;
             if (id) {
                 const existing = dbData.links.find(l => l.id === parseInt(id));
@@ -447,7 +459,7 @@
                 shade: document.getElementById('linkShade').value,
                 icon: document.getElementById('linkIcon').value,
                 desc: document.getElementById('linkDesc').value,
-                isHidden: currentHidden // รักษาสถานะเดิมไว้
+                isHidden: currentHidden 
             };
 
             if (!link.title || !link.url) {
@@ -462,7 +474,7 @@
             saveToFirebase().then(() => {
                 closeModal();
                 Toast.fire({ icon: 'success', title: 'บันทึกลิงก์สำเร็จ' });
-                renderTabs(); // อัปเดตตัวเลข
+                renderTabs(); 
             });
         };
 
@@ -481,7 +493,7 @@
                     dbData.links = dbData.links.filter(l => l.id !== id);
                     saveToFirebase();
                     Toast.fire({ icon: 'success', title: 'ลบการ์ดเรียบร้อย' });
-                    renderTabs(); // อัปเดตตัวเลข
+                    renderTabs(); 
                 }
             });
         };
@@ -730,7 +742,7 @@
                 adminPanel.classList.remove('flex');
                 btnLogin.classList.remove('sys-hidden');
             }
-            renderTabs(); // ให้อัปเดตตัวเลขด้วยเวลา Login/Logout
+            renderTabs(); 
             renderLinks();
         };
 
