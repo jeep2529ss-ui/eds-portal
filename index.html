@@ -15,8 +15,7 @@
         .sys-hidden { display: none !important; }
         .card-hover { transition: all 0.3s ease; }
         .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); }
-        .swal2-title { font-family: 'Prompt', sans-serif !important; }
-        .swal2-html-container { font-family: 'Prompt', sans-serif !important; }
+        .swal2-title, .swal2-html-container { font-family: 'Prompt', sans-serif !important; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -190,7 +189,6 @@
         let currentFilter = 'all';
         let isAdmin = false;
 
-        // การตั้งค่า Toast แบบมุมขวาบน (ไม่กวนสายตา)
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -331,7 +329,6 @@
             }).join('');
         };
 
-        // --- ระบบจัดเรียงลิงก์ (การ์ด) ---
         window.moveLink = (id, dir) => {
             const search = document.getElementById('searchInput').value.toLowerCase();
             let filtered = dbData.links.filter(l => {
@@ -349,7 +346,6 @@
             const realIndex1 = dbData.links.findIndex(l => l.id === id);
             const realIndex2 = dbData.links.findIndex(l => l.id === targetId);
             
-            // สลับตำแหน่งในระบบ
             const temp = dbData.links[realIndex1];
             dbData.links[realIndex1] = dbData.links[realIndex2];
             dbData.links[realIndex2] = temp;
@@ -426,7 +422,7 @@
             }
         };
 
-        // --- ระบบจัดการหมวดหมู่ ---
+        // --- ระบบจัดการหมวดหมู่แบบใหม่ (แก้ไขชื่อด้วย SweetAlert) ---
         window.renderCategoryList = () => {
             const list = document.getElementById('categoryList');
             list.innerHTML = dbData.categories.map((c, index) => `
@@ -435,10 +431,37 @@
                         <button onclick="moveCat(${index}, -1)" class="text-slate-400 hover:text-blue-600 leading-none p-1" ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}><i class="fa-solid fa-caret-up"></i></button>
                         <button onclick="moveCat(${index}, 1)" class="text-slate-400 hover:text-blue-600 leading-none p-1" ${index === dbData.categories.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}><i class="fa-solid fa-caret-down"></i></button>
                     </div>
-                    <input type="text" value="${c.name}" onchange="updateCatName('${c.id}', this.value)" class="flex-grow p-1.5 border border-slate-300 rounded text-slate-900 bg-white focus:ring-2 focus:ring-amber-500" title="พิมพ์เพื่อแก้ชื่อหมวดหมู่">
+                    <div class="flex-grow px-2 font-medium text-slate-800">${c.name}</div>
+                    <button onclick="editCategoryName('${c.id}')" class="text-amber-500 hover:bg-amber-100 p-2 rounded transition" title="แก้ไขชื่อหมวดหมู่"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCategory('${c.id}')" class="text-red-500 hover:bg-red-100 p-2 rounded transition" title="ลบหมวดหมู่"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `).join('');
+        };
+
+        window.editCategoryName = async (id) => {
+            const cat = dbData.categories.find(c => c.id === id);
+            if (!cat) return;
+            
+            const { value: newName } = await Swal.fire({
+                title: 'แก้ไขชื่อหมวดหมู่',
+                input: 'text',
+                inputValue: cat.name,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก',
+                inputValidator: (value) => {
+                    if (!value || value.trim() === '') {
+                        return 'กรุณาพิมพ์ชื่อหมวดหมู่ด้วยครับ!'
+                    }
+                }
+            });
+
+            if (newName && newName.trim() !== cat.name) {
+                cat.name = newName.trim();
+                saveToFirebase().then(() => {
+                    Toast.fire({ icon: 'success', title: 'เปลี่ยนชื่อหมวดหมู่เรียบร้อย' });
+                });
+            }
         };
 
         window.moveCat = (index, dir) => {
@@ -447,16 +470,6 @@
             dbData.categories[index] = dbData.categories[index + dir];
             dbData.categories[index + dir] = temp;
             saveToFirebase(); 
-        };
-
-        window.updateCatName = (id, newName) => {
-            const cat = dbData.categories.find(c => c.id === id);
-            if (cat && newName.trim() !== '') {
-                cat.name = newName.trim();
-                saveToFirebase().then(() => {
-                    Toast.fire({ icon: 'success', title: 'อัปเดตชื่อหมวดหมู่แล้ว' });
-                });
-            }
         };
 
         window.addCategory = () => {
@@ -522,7 +535,7 @@
             reader.readAsText(file);
         };
 
-        // --- Admin & Security (SweetAlert Version) ---
+        // --- Admin & Security ---
         window.changePassword = async () => {
             const { value: oldPass } = await Swal.fire({
                 title: 'รหัสผ่านปัจจุบัน',
@@ -569,12 +582,6 @@
                     sessionStorage.setItem('isAdmin', 'true');
                     checkAdmin();
                     Toast.fire({ icon: 'success', title: 'เข้าสู่ระบบ Admin แล้ว' });
-                    
-                    if (password === "eds-master-2026") {
-                        Swal.fire('โหมดกู้คืน (Master Key)', 'กรุณาเปลี่ยนรหัสผ่านใหม่ทันทีเพื่อความปลอดภัยครับ', 'warning').then(() => {
-                            changePassword();
-                        });
-                    }
                 } else {
                     Swal.fire('ผิดพลาด', 'รหัสผ่านไม่ถูกต้อง!', 'error');
                 }
@@ -585,7 +592,7 @@
             Swal.fire({
                 icon: 'info',
                 title: 'กู้คืนรหัสผ่าน',
-                html: 'หากคุณลืมรหัสผ่าน สามารถใช้รหัสผ่านฉุกเฉิน (Master Key)<br><br><b class="text-xl text-red-500 bg-slate-100 p-2 rounded">eds-master-2026</b><br><br>พิมพ์รหัสนี้ลงในช่องล็อกอิน เพื่อเข้าสู่ระบบและไปตั้งรหัสใหม่ครับ',
+                html: 'หากคุณลืมรหัสผ่าน กรุณาติดต่อ <b>ผู้ดูแลระบบ (System Admin)</b><br>เพื่อขอรับรหัสผ่านฉุกเฉินสำหรับใช้รีเซ็ตรหัสผ่านใหม่ครับ',
                 confirmButtonText: 'เข้าใจแล้ว'
             });
         };
